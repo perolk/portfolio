@@ -8,141 +8,105 @@
 <link rel="stylesheet" href="../styles.css">
 <style>
 .admin-wrap{padding:50px 0 100px;}
-.admin-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-  margin-bottom:40px;
-  border-bottom:1px solid var(--line);
-  padding-bottom:24px;
-}
-.admin-head h1{font-family:var(--serif); font-weight:400; font-size:2rem;}
-.btn-logout{
-  font-family:var(--mono);
-  font-size:0.72rem;
-  text-transform:uppercase;
-  letter-spacing:0.05em;
-  color:var(--stone);
-  background:none;
-  border:1px solid var(--line);
-  padding:8px 14px;
-  cursor:pointer;
-}
-.btn-logout:hover{border-color:var(--clay); color:var(--clay);}
-
-.admin-grid{
-  display:grid;
-  grid-template-columns:1fr 380px;
-  gap:50px;
-}
-@media (max-width:900px){
-  .admin-grid{grid-template-columns:1fr;}
-}
-
-/* listado de proyectos existentes */
+.admin-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:40px;border-bottom:1px solid var(--line);padding-bottom:24px;}
+.admin-head h1{font-family:var(--serif);font-weight:400;font-size:2rem;}
+.btn-logout{font-family:var(--mono);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--stone);background:none;border:1px solid var(--line);padding:8px 14px;cursor:pointer;}
+.btn-logout:hover{border-color:var(--clay);color:var(--clay);}
+.admin-grid{display:grid;grid-template-columns:1fr 420px;gap:50px;}
+@media(max-width:900px){.admin-grid{grid-template-columns:1fr;}}
 .admin-list{border-top:1px solid var(--line);}
-.admin-row{
-  display:grid;
-  grid-template-columns:56px 1fr auto auto;
-  align-items:center;
-  gap:16px;
-  padding:14px 0;
-  border-bottom:1px solid var(--line);
-  font-size:0.92rem;
-}
-.admin-row img{
-  width:48px;height:48px;
-  object-fit:cover;
-  background:var(--paper-dim);
-}
-.admin-row .num{font-family:var(--mono); font-size:0.78rem; color:var(--stone);}
+.admin-row{display:grid;grid-template-columns:56px 1fr auto auto;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);font-size:0.92rem;}
+.admin-row img{width:48px;height:48px;object-fit:cover;background:var(--paper-dim);}
+.admin-row .num{font-family:var(--mono);font-size:0.78rem;color:var(--stone);}
 .admin-row .title{font-weight:600;}
-.admin-row .actions{display:flex; gap:8px;}
-.admin-row button{
-  font-family:var(--mono);
-  font-size:0.68rem;
-  text-transform:uppercase;
-  background:none;
-  border:1px solid var(--line);
-  padding:6px 10px;
-  cursor:pointer;
-  color:var(--stone);
-}
-.admin-row button:hover{border-color:var(--clay); color:var(--clay);}
-.admin-row button.danger:hover{border-color:#a33; color:#a33;}
-
-/* formulario */
-.admin-form{
-  border:1px solid var(--line);
-  padding:28px;
-  position:sticky;
-  top:100px;
-  align-self:start;
-}
-.admin-form h2{
-  font-family:var(--serif);
-  font-weight:500;
-  font-size:1.25rem;
-  margin-bottom:20px;
-}
+.admin-row .actions{display:flex;gap:8px;}
+.admin-row button{font-family:var(--mono);font-size:0.68rem;text-transform:uppercase;background:none;border:1px solid var(--line);padding:6px 10px;cursor:pointer;color:var(--stone);}
+.admin-row button:hover{border-color:var(--clay);color:var(--clay);}
+.admin-row button.danger:hover{border-color:#a33;color:#a33;}
+.admin-form{border:1px solid var(--line);padding:28px;position:sticky;top:100px;align-self:start;max-height:90vh;overflow-y:auto;}
+.admin-form h2{font-family:var(--serif);font-weight:500;font-size:1.25rem;margin-bottom:20px;}
 .field{margin-bottom:16px;}
-.field label{
-  display:block;
-  font-family:var(--mono);
-  font-size:0.68rem;
-  text-transform:uppercase;
-  letter-spacing:0.05em;
-  color:var(--stone);
-  margin-bottom:5px;
-}
-.field input, .field textarea{
-  width:100%;
-  padding:9px 10px;
-  border:1px solid var(--line);
-  background:var(--paper);
-  font-family:var(--sans);
-  font-size:0.9rem;
-  color:var(--ink);
-}
-.field textarea{resize:vertical; min-height:90px;}
-.field input:focus, .field textarea:focus{outline:2px solid var(--clay); outline-offset:1px;}
-.field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-.field small{display:block; margin-top:4px; color:var(--stone); font-size:0.72rem;}
-
-.btn-row{display:flex; gap:10px; margin-top:22px;}
-.btn-primary, .btn-secondary{
-  flex:1;
-  padding:11px;
-  font-family:var(--mono);
-  font-size:0.74rem;
-  text-transform:uppercase;
-  letter-spacing:0.04em;
-  cursor:pointer;
-  border:none;
-}
-.btn-primary{background:var(--ink); color:var(--paper);}
+.field label{display:block;font-family:var(--mono);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--stone);margin-bottom:5px;}
+.field input,.field textarea,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);background:var(--paper);font-family:var(--sans);font-size:0.9rem;color:var(--ink);}
+.field textarea{resize:vertical;min-height:90px;}
+.field input:focus,.field textarea:focus{outline:2px solid var(--clay);outline-offset:1px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field small{display:block;margin-top:4px;color:var(--stone);font-size:0.72rem;}
+.btn-row{display:flex;gap:10px;margin-top:22px;}
+.btn-primary,.btn-secondary{flex:1;padding:11px;font-family:var(--mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.04em;cursor:pointer;border:none;}
+.btn-primary{background:var(--ink);color:var(--paper);}
 .btn-primary:hover{background:var(--clay);}
-.btn-primary:disabled{opacity:0.5; cursor:not-allowed;}
-.btn-secondary{background:none; border:1px solid var(--line); color:var(--stone);}
-.btn-secondary:hover{border-color:var(--ink); color:var(--ink);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-secondary{background:none;border:1px solid var(--line);color:var(--stone);}
+.btn-secondary:hover{border-color:var(--ink);color:var(--ink);}
+#form-msg{margin-top:14px;font-family:var(--mono);font-size:0.76rem;display:none;}
+#form-msg.ok{color:#3a7a4e;display:block;}
+#form-msg.err{color:var(--clay);display:block;}
+.img-preview{width:100%;aspect-ratio:4/3;background:var(--paper-dim);margin-bottom:10px;overflow:hidden;}
+.img-preview img{width:100%;height:100%;object-fit:cover;}
 
-#form-msg{
-  margin-top:14px;
-  font-family:var(--mono);
-  font-size:0.76rem;
-  display:none;
-}
-#form-msg.ok{color:#3a7a4e; display:block;}
-#form-msg.err{color:var(--clay); display:block;}
+/* --- Sección de galería extra --- */
+.section-divider{border:none;border-top:1px solid var(--line);margin:24px 0 18px;}
+.section-label{font-family:var(--mono);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--clay);margin-bottom:14px;}
 
-.img-preview{
-  width:100%;
-  aspect-ratio:4/3;
-  background:var(--paper-dim);
-  margin-bottom:10px;
-  overflow:hidden;
+/* Zona de drop de imágenes */
+.drop-zone{
+  border:2px dashed var(--line);padding:20px;text-align:center;
+  background:var(--paper-dim);cursor:pointer;transition:border-color .2s,background .2s;
+  margin-bottom:14px;
 }
-.img-preview img{width:100%; height:100%; object-fit:cover;}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--clay);background:var(--clay-soft);}
+.drop-zone p{font-family:var(--mono);font-size:0.72rem;color:var(--stone);line-height:1.6;}
+.drop-zone input[type=file]{display:none;}
+
+/* Grid de imágenes subidas con drag-to-reorder */
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.gallery-item{
+  position:relative;border:1px solid var(--line);background:var(--paper-dim);
+  aspect-ratio:4/3;overflow:hidden;cursor:grab;
+  transition:box-shadow .2s,opacity .2s;
+}
+.gallery-item:active{cursor:grabbing;}
+.gallery-item.dragging{opacity:0.4;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+.gallery-item.drag-over{box-shadow:inset 0 0 0 2px var(--clay);}
+.gallery-item img{width:100%;height:100%;object-fit:cover;pointer-events:none;}
+.gallery-item .gi-controls{
+  position:absolute;inset:0;background:rgba(23,22,15,0.55);
+  display:flex;flex-direction:column;justify-content:space-between;padding:6px;
+  opacity:0;transition:opacity .2s;
+}
+.gallery-item:hover .gi-controls{opacity:1;}
+.gi-type{
+  font-family:var(--mono);font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;
+  display:flex;gap:4px;
+}
+.gi-type button{
+  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);
+  color:#fff;font-family:var(--mono);font-size:0.58rem;text-transform:uppercase;
+  letter-spacing:0.04em;padding:3px 6px;cursor:pointer;transition:background .15s;
+}
+.gi-type button.active{background:var(--clay);border-color:var(--clay);}
+.gi-caption input{
+  width:100%;background:rgba(255,255,255,0.15);border:none;border-bottom:1px solid rgba(255,255,255,0.4);
+  color:#fff;font-family:var(--sans);font-size:0.72rem;padding:3px 4px;
+}
+.gi-caption input::placeholder{color:rgba(255,255,255,0.5);}
+.gi-caption input:focus{outline:none;border-bottom-color:#fff;}
+.gi-del{
+  position:absolute;top:4px;right:4px;
+  background:rgba(163,51,51,0.85);border:none;color:#fff;
+  width:20px;height:20px;line-height:20px;text-align:center;
+  cursor:pointer;font-size:12px;display:none;
+}
+.gallery-item:hover .gi-del{display:block;}
+.gi-handle{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:rgba(255,255,255,0.6);font-size:18px;pointer-events:none;
+}
+.gallery-uploading{
+  font-family:var(--mono);font-size:0.72rem;color:var(--stone);
+  padding:8px 0;display:none;
+}
 </style>
 </head>
 <body>
@@ -164,7 +128,7 @@
 
   <div class="admin-grid">
     <div>
-      <p style="font-family:var(--mono); font-size:0.78rem; color:var(--stone); margin-bottom:16px;">
+      <p style="font-family:var(--mono);font-size:0.78rem;color:var(--stone);margin-bottom:16px;">
         <span id="count-label">Cargando…</span>
       </p>
       <div class="admin-list" id="admin-list"></div>
@@ -175,12 +139,12 @@
       <input type="hidden" id="f-id">
 
       <div class="field">
-        <label>Imagen principal</label>
+        <label>Imagen principal (icono)</label>
         <div class="img-preview" id="img-preview-wrap">
           <img id="img-preview" src="" style="display:none;">
         </div>
         <input type="file" id="f-image" accept="image/*">
-        <small>Se sube a Supabase Storage al guardar.</small>
+        <small>Imagen del grid y cabecera de la ficha.</small>
       </div>
 
       <div class="field">
@@ -200,62 +164,48 @@
       </div>
 
       <div class="field-row">
-        <div class="field">
-          <label>Año</label>
-          <input type="text" id="f-year">
-        </div>
-        <div class="field">
-          <label>Lugar</label>
-          <input type="text" id="f-lugar">
-        </div>
+        <div class="field"><label>Año</label><input type="text" id="f-year"></div>
+        <div class="field"><label>Lugar</label><input type="text" id="f-lugar"></div>
       </div>
-
       <div class="field-row">
-        <div class="field">
-          <label>Cliente</label>
-          <input type="text" id="f-cliente">
-        </div>
-        <div class="field">
-          <label>Programa</label>
-          <input type="text" id="f-programa">
-        </div>
+        <div class="field"><label>Cliente</label><input type="text" id="f-cliente"></div>
+        <div class="field"><label>Programa</label><input type="text" id="f-programa"></div>
       </div>
-
       <div class="field-row">
-        <div class="field">
-          <label>Edificio</label>
-          <input type="text" id="f-edificio">
-        </div>
-        <div class="field">
-          <label>Arquitecto</label>
-          <input type="text" id="f-arquitecto">
-        </div>
+        <div class="field"><label>Edificio</label><input type="text" id="f-edificio"></div>
+        <div class="field"><label>Arquitecto</label><input type="text" id="f-arquitecto"></div>
       </div>
-
       <div class="field-row">
-        <div class="field">
-          <label>Zona de actuación</label>
-          <input type="text" id="f-zona">
-        </div>
-        <div class="field">
-          <label>Software</label>
-          <input type="text" id="f-software">
-        </div>
+        <div class="field"><label>Zona de actuación</label><input type="text" id="f-zona"></div>
+        <div class="field"><label>Software</label><input type="text" id="f-software"></div>
       </div>
-
       <div class="field">
         <label>Categorías (separadas por coma)</label>
         <input type="text" id="f-tags" placeholder="Reforma, Madrid">
       </div>
-
       <div class="field">
         <label>Descripción</label>
         <textarea id="f-desc"></textarea>
       </div>
 
+      <!-- ===== GALERÍA EXTRA ===== -->
+      <hr class="section-divider">
+      <p class="section-label">Imágenes adicionales de la ficha</p>
+
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="f-gallery" accept="image/*" multiple>
+        <p>Arrastra fotos aquí o <strong>haz clic</strong> para seleccionarlas<br>
+        <span style="font-size:0.65rem;">Puedes subir varias a la vez</span></p>
+      </div>
+      <p class="gallery-uploading" id="gallery-uploading">Subiendo imágenes…</p>
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <p style="font-family:var(--mono);font-size:0.65rem;color:var(--stone);margin-bottom:18px;">
+        Arrastra para reordenar · Cada imagen puede ser de <strong>Galería</strong> (aparece en el grid) o <strong>Contenido</strong> (intercalada en el texto)
+      </p>
+
       <div class="btn-row">
-        <button type="submit" class="btn-primary" id="save-btn">Guardar</button>
-        <button type="button" class="btn-secondary" id="cancel-btn" style="display:none;">Cancelar edición</button>
+        <button type="submit" class="btn-primary" id="save-btn">Guardar proyecto</button>
+        <button type="button" class="btn-secondary" id="cancel-btn" style="display:none;">Cancelar</button>
       </div>
       <p id="form-msg"></p>
     </form>

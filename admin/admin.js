@@ -1,46 +1,46 @@
 // ============================================================
-// PANEL PRIVADO — admin.js
+// PANEL PRIVADO — admin.js (con galería de imágenes extra)
 // ============================================================
 
 let currentProyectos = [];
-let editingId = null;       // uuid del proyecto en edición, o null si es alta nueva
-let selectedFile = null;    // archivo de imagen elegido en el formulario
+let editingId   = null;   // uuid del proyecto en edición
+let editingSlug = null;   // slug del proyecto en edición
+let selectedFile = null;  // archivo de imagen principal seleccionado
 
-const form = document.getElementById('project-form');
-const listEl = document.getElementById('admin-list');
-const countLabel = document.getElementById('count-label');
-const formMsg = document.getElementById('form-msg');
-const saveBtn = document.getElementById('save-btn');
-const cancelBtn = document.getElementById('cancel-btn');
-const formTitle = document.getElementById('form-title');
+// Estado de la galería extra
+let galleryItems = [];    // [{id?, url, caption, tipo, orden, file?, isNew}]
+let dragSrcIdx   = null;
 
-// ---------- Auth guard: si no hay sesión, fuera ----------
+const form        = document.getElementById('project-form');
+const listEl      = document.getElementById('admin-list');
+const countLabel  = document.getElementById('count-label');
+const formMsg     = document.getElementById('form-msg');
+const saveBtn     = document.getElementById('save-btn');
+const cancelBtn   = document.getElementById('cancel-btn');
+const formTitle   = document.getElementById('form-title');
+const galleryGrid = document.getElementById('gallery-grid');
+const dropZone    = document.getElementById('drop-zone');
+const fileInput   = document.getElementById('f-gallery');
+
+// ---------- Auth guard ----------
 async function requireAuth() {
   const { data } = await supabaseClient.auth.getSession();
-  if (!data.session) {
-    location.href = 'login.html';
-    return false;
-  }
+  if (!data.session) { location.href = 'login.html'; return false; }
   return true;
 }
-
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
   location.href = 'login.html';
 });
 
-// ---------- Cargar y pintar listado ----------
+// ---------- Cargar listado ----------
 async function loadProyectos() {
   const { data, error } = await supabaseClient
-    .from('proyectos')
-    .select('*')
-    .order('num', { ascending: true });
-
+    .from('proyectos').select('*').order('num', { ascending: true });
   if (error) {
-    listEl.innerHTML = `<p style="color:var(--clay); font-family:var(--mono); font-size:0.8rem;">Error al cargar: ${error.message}</p>`;
+    listEl.innerHTML = `<p style="color:var(--clay);font-family:var(--mono);font-size:.8rem;">Error: ${error.message}</p>`;
     return;
   }
-
   currentProyectos = data;
   countLabel.textContent = `${data.length} proyecto${data.length === 1 ? '' : 's'}`;
   renderList();
@@ -54,73 +54,62 @@ function renderList() {
         <div class="num">Pl. ${String(p.num).padStart(2,'0')}</div>
         <div class="title">${p.title}</div>
       </div>
-      <div class="actions">
-        <button data-edit="${p.id}">Editar</button>
-      </div>
-      <div class="actions">
-        <button data-delete="${p.id}" class="danger">Borrar</button>
-      </div>
-    </div>
-  `).join('');
+      <div class="actions"><button data-edit="${p.id}">Editar</button></div>
+      <div class="actions"><button data-delete="${p.id}" class="danger">Borrar</button></div>
+    </div>`).join('');
 }
 
-listEl.addEventListener('click', (e) => {
+listEl.addEventListener('click', e => {
   const editId = e.target.dataset.edit;
-  const delId = e.target.dataset.delete;
+  const delId  = e.target.dataset.delete;
   if (editId) startEdit(editId);
-  if (delId) deleteProyecto(delId);
+  if (delId)  deleteProyecto(delId);
 });
 
-// ---------- Rellenar formulario para edición ----------
-function startEdit(id) {
+// ---------- Editar proyecto ----------
+async function startEdit(id) {
   const p = currentProyectos.find(x => x.id === id);
   if (!p) return;
-
-  editingId = id;
+  editingId   = id;
+  editingSlug = p.slug;
   formTitle.textContent = `Editando: ${p.title}`;
   cancelBtn.style.display = 'block';
 
-  document.getElementById('f-id').value = p.id;
-  document.getElementById('f-title').value = p.title || '';
-  document.getElementById('f-slug').value = p.slug || '';
-  document.getElementById('f-num').value = p.num || '';
-  document.getElementById('f-year').value = p.year || '';
-  document.getElementById('f-lugar').value = p.lugar || '';
-  document.getElementById('f-cliente').value = p.cliente || '';
-  document.getElementById('f-programa').value = p.programa || '';
-  document.getElementById('f-edificio').value = p.edificio || '';
-  document.getElementById('f-arquitecto').value = p.arquitecto || '';
-  document.getElementById('f-zona').value = p.zona || '';
-  document.getElementById('f-software').value = p.software || '';
+  ['title','slug','year','lugar','cliente','programa','edificio','arquitecto','zona','software'].forEach(k => {
+    const el = document.getElementById('f-' + k);
+    if (el) el.value = p[k] || '';
+  });
+  document.getElementById('f-num').value  = p.num || '';
   document.getElementById('f-tags').value = (p.tags || []).join(', ');
   document.getElementById('f-desc').value = p.descripcion || '';
 
   const preview = document.getElementById('img-preview');
-  if (p.img_url) {
-    preview.src = p.img_url;
-    preview.style.display = 'block';
-  } else {
-    preview.style.display = 'none';
-  }
+  if (p.img_url) { preview.src = p.img_url; preview.style.display = 'block'; }
+  else { preview.style.display = 'none'; }
   selectedFile = null;
 
+  // Cargar imágenes extra de la galería
+  await loadGallery(p.slug);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 cancelBtn.addEventListener('click', resetForm);
 
 function resetForm() {
-  editingId = null;
+  editingId   = null;
+  editingSlug = null;
   selectedFile = null;
   form.reset();
   formTitle.textContent = 'Nuevo proyecto';
   cancelBtn.style.display = 'none';
   document.getElementById('img-preview').style.display = 'none';
   formMsg.style.display = 'none';
+  galleryItems = [];
+  renderGallery();
 }
 
-// ---------- Preview de imagen seleccionada ----------
-document.getElementById('f-image').addEventListener('change', (e) => {
+// ---------- Preview imagen principal ----------
+document.getElementById('f-image').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   selectedFile = file;
@@ -133,36 +122,154 @@ document.getElementById('f-image').addEventListener('change', (e) => {
 async function deleteProyecto(id) {
   const p = currentProyectos.find(x => x.id === id);
   if (!p) return;
-  const ok = confirm(`¿Seguro que quieres borrar "${p.title}"? Esta acción no se puede deshacer.`);
-  if (!ok) return;
-
+  if (!confirm(`¿Borrar "${p.title}"? Esta acción no se puede deshacer.`)) return;
   const { error } = await supabaseClient.from('proyectos').delete().eq('id', id);
-  if (error) {
-    alert('Error al borrar: ' + error.message);
-    return;
-  }
+  if (error) { alert('Error: ' + error.message); return; }
   if (editingId === id) resetForm();
   await loadProyectos();
 }
 
-// ---------- Subir imagen a Storage y devolver su URL pública ----------
-async function uploadImage(file, slug) {
-  const ext = file.name.split('.').pop();
-  const path = `${slug}-${Date.now()}.${ext}`;
-
-  const { error: uploadError } = await supabaseClient
-    .storage
-    .from('project-images')
-    .upload(path, file, { cacheControl: '3600', upsert: false });
-
-  if (uploadError) throw new Error('Error al subir la imagen: ' + uploadError.message);
-
-  const { data } = supabaseClient.storage.from('project-images').getPublicUrl(path);
-  return data.publicUrl;
+// ---------- Subir imagen a Storage ----------
+async function uploadImage(file, prefix) {
+  const ext  = file.name.split('.').pop();
+  const path = `${prefix}-${Date.now()}.${ext}`;
+  const { error } = await supabaseClient.storage
+    .from('project-images').upload(path, file, { cacheControl: '3600', upsert: false });
+  if (error) throw new Error('Error al subir la imagen: ' + error.message);
+  return supabaseClient.storage.from('project-images').getPublicUrl(path).data.publicUrl;
 }
 
-// ---------- Guardar (crear o actualizar) ----------
-form.addEventListener('submit', async (e) => {
+// ============================================================
+// GALERÍA EXTRA
+// ============================================================
+
+async function loadGallery(slug) {
+  const { data, error } = await supabaseClient
+    .from('proyecto_imagenes')
+    .select('*')
+    .eq('proyecto_slug', slug)
+    .order('orden', { ascending: true });
+  if (error) { console.error(error); galleryItems = []; }
+  else { galleryItems = data.map(r => ({ ...r, isNew: false })); }
+  renderGallery();
+}
+
+function renderGallery() {
+  galleryGrid.innerHTML = '';
+  galleryItems.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'gallery-item';
+    div.draggable = true;
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <img src="${item.url}" alt="${item.caption || ''}">
+      <div class="gi-controls">
+        <div class="gi-type">
+          <button type="button" class="${item.tipo === 'galeria' ? 'active' : ''}"
+            onclick="setTipo(${idx},'galeria')">Galería</button>
+          <button type="button" class="${item.tipo === 'contenido' ? 'active' : ''}"
+            onclick="setTipo(${idx},'contenido')">Contenido</button>
+        </div>
+        <div class="gi-caption">
+          <input type="text" placeholder="Pie de foto (opcional)"
+            value="${item.caption || ''}"
+            oninput="galleryItems[${idx}].caption=this.value">
+        </div>
+      </div>
+      <button type="button" class="gi-del" onclick="removeGalleryItem(${idx})">✕</button>
+      <span class="gi-handle">⠿</span>`;
+
+    // Drag-to-reorder
+    div.addEventListener('dragstart', e => {
+      dragSrcIdx = idx;
+      setTimeout(() => div.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    div.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      galleryGrid.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('drag-over'));
+      div.classList.add('drag-over');
+    });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      div.classList.remove('drag-over');
+      if (dragSrcIdx === null || dragSrcIdx === idx) return;
+      const moved = galleryItems.splice(dragSrcIdx, 1)[0];
+      galleryItems.splice(idx, 0, moved);
+      dragSrcIdx = null;
+      renderGallery();
+    });
+
+    galleryGrid.appendChild(div);
+  });
+}
+
+function setTipo(idx, tipo) {
+  galleryItems[idx].tipo = tipo;
+  renderGallery();
+}
+
+function removeGalleryItem(idx) {
+  galleryItems.splice(idx, 1);
+  renderGallery();
+}
+
+// Drop zone para subir nuevas imágenes
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleGalleryFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleGalleryFiles(e.target.files));
+
+function handleGalleryFiles(files) {
+  Array.from(files).forEach(file => {
+    const url = URL.createObjectURL(file);
+    galleryItems.push({ url, caption: '', tipo: 'galeria', orden: galleryItems.length, file, isNew: true });
+  });
+  renderGallery();
+}
+
+// Guardar las imágenes extra en Supabase
+async function saveGallery(slug) {
+  // 1. Subir archivos nuevos
+  for (let item of galleryItems) {
+    if (item.isNew && item.file) {
+      item.url = await uploadImage(item.file, slug + '-gallery');
+      delete item.file;
+      item.isNew = false;
+    }
+  }
+
+  // 2. Borrar las existentes en BD para este slug y reinsertarlas con el orden nuevo
+  const { error: delError } = await supabaseClient
+    .from('proyecto_imagenes').delete().eq('proyecto_slug', slug);
+  if (delError) throw new Error('Error al actualizar galería: ' + delError.message);
+
+  if (galleryItems.length === 0) return;
+
+  const rows = galleryItems.map((item, i) => ({
+    proyecto_slug: slug,
+    url:     item.url,
+    caption: item.caption || null,
+    tipo:    item.tipo || 'galeria',
+    orden:   i,
+  }));
+
+  const { error: insError } = await supabaseClient.from('proyecto_imagenes').insert(rows);
+  if (insError) throw new Error('Error al guardar galería: ' + insError.message);
+}
+
+// ============================================================
+// GUARDAR PROYECTO
+// ============================================================
+form.addEventListener('submit', async e => {
   e.preventDefault();
   formMsg.style.display = 'none';
   saveBtn.disabled = true;
@@ -170,37 +277,31 @@ form.addEventListener('submit', async (e) => {
 
   try {
     const slug = document.getElementById('f-slug').value.trim().toLowerCase();
-    if (!/^[a-z0-9\-]+$/.test(slug)) {
-      throw new Error('El slug solo puede tener letras minúsculas, números y guiones.');
-    }
+    if (!/^[a-z0-9\-]+$/.test(slug)) throw new Error('El slug solo puede tener letras minúsculas, números y guiones.');
 
+    // Imagen principal
     let imgUrl = document.getElementById('img-preview').src;
-    if (selectedFile) {
-      imgUrl = await uploadImage(selectedFile, slug);
-    }
-    if (!editingId && !selectedFile) {
-      throw new Error('Sube una imagen principal para el proyecto.');
-    }
+    if (selectedFile) imgUrl = await uploadImage(selectedFile, slug);
+    if (!editingId && !selectedFile) throw new Error('Sube una imagen principal para el proyecto.');
 
-    const tags = document.getElementById('f-tags').value
-      .split(',').map(t => t.trim()).filter(Boolean);
+    const tags = document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean);
 
     const payload = {
-      title: document.getElementById('f-title').value.trim(),
+      title:       document.getElementById('f-title').value.trim(),
       slug,
-      num: parseInt(document.getElementById('f-num').value, 10),
-      year: document.getElementById('f-year').value.trim(),
-      lugar: document.getElementById('f-lugar').value.trim(),
-      cliente: document.getElementById('f-cliente').value.trim(),
-      programa: document.getElementById('f-programa').value.trim(),
-      edificio: document.getElementById('f-edificio').value.trim(),
-      arquitecto: document.getElementById('f-arquitecto').value.trim(),
-      zona: document.getElementById('f-zona').value.trim(),
-      software: document.getElementById('f-software').value.trim(),
+      num:         parseInt(document.getElementById('f-num').value, 10),
+      year:        document.getElementById('f-year').value.trim(),
+      lugar:       document.getElementById('f-lugar').value.trim(),
+      cliente:     document.getElementById('f-cliente').value.trim(),
+      programa:    document.getElementById('f-programa').value.trim(),
+      edificio:    document.getElementById('f-edificio').value.trim(),
+      arquitecto:  document.getElementById('f-arquitecto').value.trim(),
+      zona:        document.getElementById('f-zona').value.trim(),
+      software:    document.getElementById('f-software').value.trim(),
       descripcion: document.getElementById('f-desc').value.trim(),
       tags,
-      img_url: imgUrl,
-      updated_at: new Date().toISOString(),
+      img_url:     imgUrl,
+      updated_at:  new Date().toISOString(),
     };
 
     let error;
@@ -209,13 +310,14 @@ form.addEventListener('submit', async (e) => {
     } else {
       ({ error } = await supabaseClient.from('proyectos').insert(payload));
     }
-
     if (error) {
-      if (error.code === '23505') {
-        throw new Error('Ya existe un proyecto con ese slug. Elige otro.');
-      }
+      if (error.code === '23505') throw new Error('Ya existe un proyecto con ese slug.');
       throw new Error(error.message);
     }
+
+    // Guardar galería extra (usando el slug definitivo)
+    const finalSlug = editingSlug || slug;
+    await saveGallery(finalSlug);
 
     formMsg.className = 'ok';
     formMsg.textContent = editingId ? 'Proyecto actualizado.' : 'Proyecto creado.';
@@ -229,7 +331,7 @@ form.addEventListener('submit', async (e) => {
     formMsg.style.display = 'block';
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Guardar';
+    saveBtn.textContent = 'Guardar proyecto';
   }
 });
 

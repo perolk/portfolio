@@ -12,7 +12,7 @@
 // secreta y nunca debe estar en código de frontend).
 // ============================================================
 
-const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
-const SUPABASE_ANON_KEY = 'TU-CLAVE-ANON-PUBLICA';
+const SUPABASE_URL = 'https://fdslykcqjyvxzzybaqsi.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_JLXSWQcDvzZsJcsBacrxWA_0ogMXfwN';
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

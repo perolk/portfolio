@@ -5,6 +5,92 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proyecto — Elías Torres, arquitecto</title>
 <link rel="stylesheet" href="../styles.css">
+<style>
+/* ---- Imágenes de contenido (intercaladas en el texto) ---- */
+.content-img{
+  margin:36px 0;
+}
+.content-img img{
+  width:100%;
+  max-height:70vh;
+  object-fit:cover;
+  display:block;
+}
+.content-img figcaption{
+  font-family:var(--mono);
+  font-size:0.72rem;
+  color:var(--stone);
+  margin-top:8px;
+  letter-spacing:0.03em;
+}
+
+/* ---- Galería grid ---- */
+.gallery-section{
+  padding:40px 0 20px;
+  border-top:1px solid var(--line);
+  margin-top:10px;
+}
+.gallery-section h2{
+  font-family:var(--mono);
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:var(--clay);
+  margin-bottom:20px;
+  padding:0 var(--gutter);
+}
+.gallery-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:3px;
+}
+.gallery-thumb{
+  aspect-ratio:4/3;
+  overflow:hidden;
+  cursor:zoom-in;
+  background:var(--paper-dim);
+}
+.gallery-thumb img{
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:transform .4s ease;
+}
+.gallery-thumb:hover img{transform:scale(1.04);}
+@media(max-width:640px){.gallery-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* ---- Lightbox ---- */
+.lightbox{
+  position:fixed;inset:0;
+  background:rgba(15,14,10,0.94);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity .25s ease;
+}
+.lightbox.open{opacity:1;pointer-events:auto;}
+.lightbox img{
+  max-width:90vw;max-height:88vh;
+  object-fit:contain;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+.lightbox figcaption{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:0.72rem;color:rgba(255,255,255,0.6);
+  letter-spacing:0.04em;white-space:nowrap;
+}
+.lb-close{
+  position:absolute;top:20px;right:24px;
+  background:none;border:none;color:#fff;font-size:28px;
+  cursor:pointer;opacity:0.6;line-height:1;
+}
+.lb-close:hover{opacity:1;}
+.lb-prev,.lb-next{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:#fff;font-size:36px;
+  cursor:pointer;opacity:0.5;padding:0 16px;line-height:1;
+}
+.lb-prev:hover,.lb-next:hover{opacity:1;}
+.lb-prev{left:0;}.lb-next{right:0;}
+</style>
 </head>
 <body>
 
@@ -33,7 +119,16 @@
 
   <section class="wrap detail-body">
     <dl class="spec-list" id="d-specs"></dl>
-    <div class="body-copy"><p id="d-desc"></p></div>
+    <div class="body-copy" id="d-body">
+      <p id="d-desc"></p>
+      <!-- Las imágenes de tipo 'contenido' se insertan aquí -->
+    </div>
+  </section>
+
+  <!-- Galería grid (imágenes tipo 'galeria') -->
+  <section class="gallery-section" id="gallery-section" style="display:none;">
+    <h2 class="wrap">Imágenes del proyecto</h2>
+    <div class="gallery-grid" id="gallery-grid"></div>
   </section>
 
   <nav class="wrap detail-nav">
@@ -49,10 +144,20 @@
   </div>
 </footer>
 
+<!-- Lightbox -->
+<figure class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <button class="lb-close" id="lb-close" aria-label="Cerrar">✕</button>
+  <button class="lb-prev"  id="lb-prev"  aria-label="Anterior">‹</button>
+  <img id="lb-img" src="" alt="">
+  <figcaption id="lb-caption"></figcaption>
+  <button class="lb-next"  id="lb-next"  aria-label="Siguiente">›</button>
+</figure>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase-config.js"></script>
 <script src="../data-client.js"></script>
 <script>
+// --- Nav móvil ---
 (function(){
   var btn = document.getElementById('navtoggle');
   var nav = document.getElementById('mainnav');
@@ -70,54 +175,73 @@ const FIELD_LABELS = [
   ['software','Software'],['year','Año']
 ];
 
-function getSlugFromUrl(){
+function getSlug(){
   const params = new URLSearchParams(location.search);
   if(params.get('p')) return params.get('p');
-  // fallback: si se accede como /proyectos/mi-slug.html directamente
-  const path = location.pathname.split('/').pop().replace('.html', '');
+  const path = location.pathname.split('/').pop().replace('.html','');
   return path === 'detalle' ? null : path;
 }
 
+// --- Lightbox ---
+let lbImages = [];
+let lbIdx = 0;
+
+function openLightbox(images, idx){
+  lbImages = images;
+  lbIdx = idx;
+  showLb();
+  document.getElementById('lightbox').classList.add('open');
+  document.addEventListener('keydown', lbKey);
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.removeEventListener('keydown', lbKey);
+}
+function showLb(){
+  const item = lbImages[lbIdx];
+  document.getElementById('lb-img').src = item.url;
+  document.getElementById('lb-caption').textContent = item.caption || '';
+}
+function lbKey(e){
+  if(e.key === 'Escape') closeLightbox();
+  if(e.key === 'ArrowLeft')  { lbIdx = (lbIdx - 1 + lbImages.length) % lbImages.length; showLb(); }
+  if(e.key === 'ArrowRight') { lbIdx = (lbIdx + 1) % lbImages.length; showLb(); }
+}
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+document.getElementById('lb-prev').addEventListener('click', () => { lbIdx = (lbIdx - 1 + lbImages.length) % lbImages.length; showLb(); });
+document.getElementById('lb-next').addEventListener('click', () => { lbIdx = (lbIdx + 1) % lbImages.length; showLb(); });
+document.getElementById('lightbox').addEventListener('click', e => { if(e.target === e.currentTarget) closeLightbox(); });
+
+// --- Cargar proyecto + imágenes ---
 async function init(){
-  const slug = getSlugFromUrl();
-  if(!slug){
-    document.getElementById('d-plate').textContent = 'Proyecto no especificado.';
-    return;
-  }
+  const slug = getSlug();
+  if(!slug){ document.getElementById('d-plate').textContent = 'Proyecto no especificado.'; return; }
 
   let proyectos;
-  try{
-    proyectos = await fetchProyectos();
-  }catch(err){
-    document.getElementById('d-plate').textContent = 'Error al cargar el proyecto.';
-    document.getElementById('d-desc').textContent = err.message;
-    return;
-  }
+  try{ proyectos = await fetchProyectos(); }
+  catch(err){ document.getElementById('d-plate').textContent = 'Error al cargar.'; return; }
 
   const i = proyectos.findIndex(p => p.id === slug);
-  if(i === -1){
-    document.getElementById('d-plate').textContent = 'Proyecto no encontrado.';
-    return;
-  }
+  if(i === -1){ document.getElementById('d-plate').textContent = 'Proyecto no encontrado.'; return; }
 
   const p = proyectos[i];
   const total = proyectos.length;
-  const prev = proyectos[(i - 1 + total) % total];
-  const next = proyectos[(i + 1) % total];
+  const prev  = proyectos[(i - 1 + total) % total];
+  const next  = proyectos[(i + 1) % total];
 
   document.title = `${p.title} — Elías Torres, arquitecto`;
   document.getElementById('d-plate').textContent = `Lámina ${p.num} / ${total}${p.year ? ' · ' + p.year : ''}`;
   document.getElementById('d-title').textContent = p.title;
-  document.getElementById('d-img').src = p.img;
-  document.getElementById('d-img').alt = p.title;
+  document.getElementById('d-img').src  = p.img;
+  document.getElementById('d-img').alt  = p.title;
   document.getElementById('d-desc').textContent = p.descripcion;
 
   const specs = FIELD_LABELS
     .filter(([key]) => p[key])
     .map(([key,label]) => `<dt>${label}</dt><dd>${p[key]}</dd>`)
     .join('');
-  const tags = p.tags.map(t => `<a href="../index.html">${t}</a>`).join('');
-  document.getElementById('d-specs').innerHTML = specs + `<dt>Categorías</dt><dd class="tags">${tags}</dd>`;
+  document.getElementById('d-specs').innerHTML = specs
+    + `<dt>Categorías</dt><dd class="tags">${p.tags.map(t=>`<a href="../index.html">${t}</a>`).join('')}</dd>`;
 
   const prevA = document.getElementById('d-prev');
   const nextA = document.getElementById('d-next');
@@ -125,6 +249,51 @@ async function init(){
   prevA.textContent = `← ${prev.title}`;
   nextA.href = `detalle.html?p=${next.id}`;
   nextA.textContent = `${next.title} →`;
+
+  // Cargar imágenes extra
+  await loadExtraImages(slug);
+}
+
+async function loadExtraImages(slug){
+  const { data, error } = await supabaseClient
+    .from('proyecto_imagenes')
+    .select('*')
+    .eq('proyecto_slug', slug)
+    .order('orden', { ascending: true });
+
+  if(error || !data || data.length === 0) return;
+
+  const contenido = data.filter(x => x.tipo === 'contenido');
+  const galeria   = data.filter(x => x.tipo === 'galeria');
+
+  // Imágenes de contenido: insertarlas tras el párrafo de descripción
+  if(contenido.length > 0){
+    const bodyEl = document.getElementById('d-body');
+    contenido.forEach(img => {
+      const fig = document.createElement('figure');
+      fig.className = 'content-img';
+      fig.innerHTML = `<img src="${img.url}" alt="${img.caption || ''}" loading="lazy">`
+        + (img.caption ? `<figcaption>${img.caption}</figcaption>` : '');
+      bodyEl.appendChild(fig);
+    });
+  }
+
+  // Imágenes de galería: mostrar grid con lightbox
+  if(galeria.length > 0){
+    const section = document.getElementById('gallery-section');
+    const grid    = document.getElementById('gallery-grid');
+    section.style.display = '';
+    grid.innerHTML = galeria.map((img, idx) => `
+      <div class="gallery-thumb" data-idx="${idx}" role="button" tabindex="0"
+           aria-label="Ver imagen ${idx+1}">
+        <img src="${img.url}" alt="${img.caption || ''}" loading="lazy">
+      </div>`).join('');
+
+    grid.querySelectorAll('.gallery-thumb').forEach(el => {
+      el.addEventListener('click', () => openLightbox(galeria, parseInt(el.dataset.idx)));
+      el.addEventListener('keydown', e => { if(e.key==='Enter') openLightbox(galeria, parseInt(el.dataset.idx)); });
+    });
+  }
 }
 
 init();

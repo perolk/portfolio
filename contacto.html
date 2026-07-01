@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacto — Elías Torres, arquitecto</title>
+<meta name="description" content="Contacta con Elías Torres para tu próximo proyecto de arquitectura.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="index.html" class="brand">Elías Torres<sup>arq.</sup></a>
+    <nav class="mainnav" id="mainnav">
+      <a href="index.html">Proyectos</a>
+      <a href="cv.html">CV</a>
+      <a href="contacto.html" class="active">Contacto</a>
+    </nav>
+    <button class="navtoggle" id="navtoggle" aria-label="Abrir menú">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="wrap contact-grid">
+    <div>
+      <h1>Hablemos de tu próximo proyecto.</h1>
+      <dl class="contact-list">
+        <dt>Correo</dt>
+        <dd><a href="mailto:hola@eliastorres.es">hola@eliastorres.es</a></dd>
+
+        <dt>Teléfono</dt>
+        <dd><a href="tel:+34600000000">+34 600 000 000</a></dd>
+
+        <dt>Sede</dt>
+        <dd>Madrid &amp; Zaragoza, España</dd>
+
+        <dt>Redes</dt>
+        <dd><a href="https://www.linkedin.com/in/eliastorresgil" target="_blank" rel="noopener">LinkedIn</a></dd>
+      </dl>
+    </div>
+    <div class="contact-map">
+      Sustituye este bloque por un mapa embebido (Google Maps / Mapbox) cuando tengas la dirección definitiva del estudio.
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Elías Torres</span>
+    <a href="mailto:hola@eliastorres.es">hola@eliastorres.es</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('navtoggle');
+  var nav = document.getElementById('mainnav');
+  if(btn && nav){
+    btn.addEventListener('click', function(){
+      nav.classList.toggle('open');
+      btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
+    });
+  }
+})();
+</script>
+</body>
+</html>

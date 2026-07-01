@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel privado — Elías Torres</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+.admin-wrap{padding:50px 0 100px;}
+.admin-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:40px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:24px;
+}
+.admin-head h1{font-family:var(--serif); font-weight:400; font-size:2rem;}
+.btn-logout{
+  font-family:var(--mono);
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--stone);
+  background:none;
+  border:1px solid var(--line);
+  padding:8px 14px;
+  cursor:pointer;
+}
+.btn-logout:hover{border-color:var(--clay); color:var(--clay);}
+
+.admin-grid{
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:50px;
+}
+@media (max-width:900px){
+  .admin-grid{grid-template-columns:1fr;}
+}
+
+/* listado de proyectos existentes */
+.admin-list{border-top:1px solid var(--line);}
+.admin-row{
+  display:grid;
+  grid-template-columns:56px 1fr auto auto;
+  align-items:center;
+  gap:16px;
+  padding:14px 0;
+  border-bottom:1px solid var(--line);
+  font-size:0.92rem;
+}
+.admin-row img{
+  width:48px;height:48px;
+  object-fit:cover;
+  background:var(--paper-dim);
+}
+.admin-row .num{font-family:var(--mono); font-size:0.78rem; color:var(--stone);}
+.admin-row .title{font-weight:600;}
+.admin-row .actions{display:flex; gap:8px;}
+.admin-row button{
+  font-family:var(--mono);
+  font-size:0.68rem;
+  text-transform:uppercase;
+  background:none;
+  border:1px solid var(--line);
+  padding:6px 10px;
+  cursor:pointer;
+  color:var(--stone);
+}
+.admin-row button:hover{border-color:var(--clay); color:var(--clay);}
+.admin-row button.danger:hover{border-color:#a33; color:#a33;}
+
+/* formulario */
+.admin-form{
+  border:1px solid var(--line);
+  padding:28px;
+  position:sticky;
+  top:100px;
+  align-self:start;
+}
+.admin-form h2{
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:1.25rem;
+  margin-bottom:20px;
+}
+.field{margin-bottom:16px;}
+.field label{
+  display:block;
+  font-family:var(--mono);
+  font-size:0.68rem;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--stone);
+  margin-bottom:5px;
+}
+.field input, .field textarea{
+  width:100%;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  background:var(--paper);
+  font-family:var(--sans);
+  font-size:0.9rem;
+  color:var(--ink);
+}
+.field textarea{resize:vertical; min-height:90px;}
+.field input:focus, .field textarea:focus{outline:2px solid var(--clay); outline-offset:1px;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.field small{display:block; margin-top:4px; color:var(--stone); font-size:0.72rem;}
+
+.btn-row{display:flex; gap:10px; margin-top:22px;}
+.btn-primary, .btn-secondary{
+  flex:1;
+  padding:11px;
+  font-family:var(--mono);
+  font-size:0.74rem;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  cursor:pointer;
+  border:none;
+}
+.btn-primary{background:var(--ink); color:var(--paper);}
+.btn-primary:hover{background:var(--clay);}
+.btn-primary:disabled{opacity:0.5; cursor:not-allowed;}
+.btn-secondary{background:none; border:1px solid var(--line); color:var(--stone);}
+.btn-secondary:hover{border-color:var(--ink); color:var(--ink);}
+
+#form-msg{
+  margin-top:14px;
+  font-family:var(--mono);
+  font-size:0.76rem;
+  display:none;
+}
+#form-msg.ok{color:#3a7a4e; display:block;}
+#form-msg.err{color:var(--clay); display:block;}
+
+.img-preview{
+  width:100%;
+  aspect-ratio:4/3;
+  background:var(--paper-dim);
+  margin-bottom:10px;
+  overflow:hidden;
+}
+.img-preview img{width:100%; height:100%; object-fit:cover;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="../index.html" class="brand">Elías Torres<sup>arq.</sup></a>
+    <nav class="mainnav">
+      <a href="../index.html">Ver sitio público →</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap admin-wrap">
+  <div class="admin-head">
+    <h1>Gestión de proyectos</h1>
+    <button class="btn-logout" id="logout-btn">Cerrar sesión</button>
+  </div>
+
+  <div class="admin-grid">
+    <div>
+      <p style="font-family:var(--mono); font-size:0.78rem; color:var(--stone); margin-bottom:16px;">
+        <span id="count-label">Cargando…</span>
+      </p>
+      <div class="admin-list" id="admin-list"></div>
+    </div>
+
+    <form class="admin-form" id="project-form">
+      <h2 id="form-title">Nuevo proyecto</h2>
+      <input type="hidden" id="f-id">
+
+      <div class="field">
+        <label>Imagen principal</label>
+        <div class="img-preview" id="img-preview-wrap">
+          <img id="img-preview" src="" style="display:none;">
+        </div>
+        <input type="file" id="f-image" accept="image/*">
+        <small>Se sube a Supabase Storage al guardar.</small>
+      </div>
+
+      <div class="field">
+        <label>Título *</label>
+        <input type="text" id="f-title" required>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Slug (URL) *</label>
+          <input type="text" id="f-slug" required pattern="[a-z0-9\-]+">
+        </div>
+        <div class="field">
+          <label>Nº lámina *</label>
+          <input type="number" id="f-num" required min="1">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Año</label>
+          <input type="text" id="f-year">
+        </div>
+        <div class="field">
+          <label>Lugar</label>
+          <input type="text" id="f-lugar">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Cliente</label>
+          <input type="text" id="f-cliente">
+        </div>
+        <div class="field">
+          <label>Programa</label>
+          <input type="text" id="f-programa">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Edificio</label>
+          <input type="text" id="f-edificio">
+        </div>
+        <div class="field">
+          <label>Arquitecto</label>
+          <input type="text" id="f-arquitecto">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Zona de actuación</label>
+          <input type="text" id="f-zona">
+        </div>
+        <div class="field">
+          <label>Software</label>
+          <input type="text" id="f-software">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Categorías (separadas por coma)</label>
+        <input type="text" id="f-tags" placeholder="Reforma, Madrid">
+      </div>
+
+      <div class="field">
+        <label>Descripción</label>
+        <textarea id="f-desc"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn-primary" id="save-btn">Guardar</button>
+        <button type="button" class="btn-secondary" id="cancel-btn" style="display:none;">Cancelar edición</button>
+      </div>
+      <p id="form-msg"></p>
+    </form>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

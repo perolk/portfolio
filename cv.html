@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV — Elías Torres, arquitecto</title>
+<meta name="description" content="Formación, experiencia y herramientas de Elías Torres, arquitecto.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="index.html" class="brand">Elías Torres<sup>arq.</sup></a>
+    <nav class="mainnav" id="mainnav">
+      <a href="index.html">Proyectos</a>
+      <a href="cv.html" class="active">CV</a>
+      <a href="contacto.html">Contacto</a>
+    </nav>
+    <button class="navtoggle" id="navtoggle" aria-label="Abrir menú">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero" style="padding-bottom:50px;">
+    <div class="wrap">
+      <p class="eyebrow">Currículum</p>
+      <h1>Formación técnica, <em>mirada de autor.</em></h1>
+      <p class="lede">Arquitecto formado entre Madrid y Zaragoza, con experiencia en reforma residencial, concursos públicos y modelado BIM. Edita este apartado con tu trayectoria real cuando tengas los datos definitivos.</p>
+    </div>
+  </section>
+
+  <section class="wrap cv-section">
+    <h2>Formación</h2>
+    <div class="cv-grid">
+      <div class="when">2017 — 2018</div>
+      <div class="what cv-entry"><span class="role">Máster Universitario (TFM en BIM)</span><br><span class="place">Universidad Politécnica de Madrid (UPM)</span></div>
+
+      <div class="when">2012 — 2017</div>
+      <div class="what cv-entry"><span class="role">Grado en Fundamentos de la Arquitectura</span><br><span class="place">IE University, Segovia</span></div>
+    </div>
+  </section>
+
+  <section class="wrap cv-section">
+    <h2>Experiencia</h2>
+    <div class="cv-grid">
+      <div class="when">2019 — hoy</div>
+      <div class="what cv-entry"><span class="role">Arquitecto, ejercicio libre</span><br><span class="place">Reforma residencial y comercial — Madrid / Zaragoza</span></div>
+
+      <div class="when">2014 — 2018</div>
+      <div class="what cv-entry"><span class="role">Participación en concursos públicos</span><br><span class="place">Equipamientos, vivienda colectiva y espacio público</span></div>
+    </div>
+  </section>
+
+  <section class="wrap cv-section">
+    <h2>Herramientas</h2>
+    <div class="skills-cloud">
+      <span>Revit</span>
+      <span>AutoCAD</span>
+      <span>BIM</span>
+      <span>SketchUp</span>
+      <span>Adobe Suite</span>
+      <span>Fotografía de arquitectura</span>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Elías Torres</span>
+    <a href="contacto.html">Hablemos de tu proyecto →</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('navtoggle');
+  var nav = document.getElementById('mainnav');
+  if(btn && nav){
+    btn.addEventListener('click', function(){
+      nav.classList.toggle('open');
+      btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
+    });
+  }
+})();
+</script>
+</body>
+</html>

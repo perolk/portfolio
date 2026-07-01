@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyecto — Elías Torres, arquitecto</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="../index.html" class="brand">Elías Torres<sup>arq.</sup></a>
+    <nav class="mainnav" id="mainnav">
+      <a href="../index.html">Proyectos</a>
+      <a href="../cv.html">CV</a>
+      <a href="../contacto.html">Contacto</a>
+    </nav>
+    <button class="navtoggle" id="navtoggle" aria-label="Abrir menú">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="wrap detail-hero">
+    <a class="backlink" href="../index.html">← Índice de proyectos</a>
+    <p class="plate" id="d-plate">Cargando…</p>
+    <h1 id="d-title"></h1>
+  </section>
+
+  <figure class="detail-figure">
+    <img id="d-img" src="" alt="">
+  </figure>
+
+  <section class="wrap detail-body">
+    <dl class="spec-list" id="d-specs"></dl>
+    <div class="body-copy"><p id="d-desc"></p></div>
+  </section>
+
+  <nav class="wrap detail-nav">
+    <a class="prev" id="d-prev" href="../index.html"></a>
+    <a class="next" id="d-next" href="../index.html"></a>
+  </nav>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Elías Torres</span>
+    <a href="../contacto.html">Hablemos de tu proyecto →</a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-config.js"></script>
+<script src="../data-client.js"></script>
+<script>
+(function(){
+  var btn = document.getElementById('navtoggle');
+  var nav = document.getElementById('mainnav');
+  if(btn && nav){
+    btn.addEventListener('click', function(){
+      nav.classList.toggle('open');
+      btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
+    });
+  }
+})();
+
+const FIELD_LABELS = [
+  ['lugar','Lugar'],['zona','Zona de actuación'],['edificio','Edificio'],
+  ['arquitecto','Arquitecto'],['cliente','Cliente'],['programa','Programa'],
+  ['software','Software'],['year','Año']
+];
+
+function getSlugFromUrl(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('p')) return params.get('p');
+  // fallback: si se accede como /proyectos/mi-slug.html directamente
+  const path = location.pathname.split('/').pop().replace('.html', '');
+  return path === 'detalle' ? null : path;
+}
+
+async function init(){
+  const slug = getSlugFromUrl();
+  if(!slug){
+    document.getElementById('d-plate').textContent = 'Proyecto no especificado.';
+    return;
+  }
+
+  let proyectos;
+  try{
+    proyectos = await fetchProyectos();
+  }catch(err){
+    document.getElementById('d-plate').textContent = 'Error al cargar el proyecto.';
+    document.getElementById('d-desc').textContent = err.message;
+    return;
+  }
+
+  const i = proyectos.findIndex(p => p.id === slug);
+  if(i === -1){
+    document.getElementById('d-plate').textContent = 'Proyecto no encontrado.';
+    return;
+  }
+
+  const p = proyectos[i];
+  const total = proyectos.length;
+  const prev = proyectos[(i - 1 + total) % total];
+  const next = proyectos[(i + 1) % total];
+
+  document.title = `${p.title} — Elías Torres, arquitecto`;
+  document.getElementById('d-plate').textContent = `Lámina ${p.num} / ${total}${p.year ? ' · ' + p.year : ''}`;
+  document.getElementById('d-title').textContent = p.title;
+  document.getElementById('d-img').src = p.img;
+  document.getElementById('d-img').alt = p.title;
+  document.getElementById('d-desc').textContent = p.descripcion;
+
+  const specs = FIELD_LABELS
+    .filter(([key]) => p[key])
+    .map(([key,label]) => `<dt>${label}</dt><dd>${p[key]}</dd>`)
+    .join('');
+  const tags = p.tags.map(t => `<a href="../index.html">${t}</a>`).join('');
+  document.getElementById('d-specs').innerHTML = specs + `<dt>Categorías</dt><dd class="tags">${tags}</dd>`;
+
+  const prevA = document.getElementById('d-prev');
+  const nextA = document.getElementById('d-next');
+  prevA.href = `detalle.html?p=${prev.id}`;
+  prevA.textContent = `← ${prev.title}`;
+  nextA.href = `detalle.html?p=${next.id}`;
+  nextA.textContent = `${next.title} →`;
+}
+
+init();
+</script>
+</body>
+</html>

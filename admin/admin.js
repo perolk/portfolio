@@ -1,14 +1,12 @@
 // ============================================================
-// PANEL PRIVADO — admin.js (con galería de imágenes extra)
+// PANEL PRIVADO — admin.js
 // ============================================================
 
 let currentProyectos = [];
-let editingId   = null;   // uuid del proyecto en edición
-let editingSlug = null;   // slug del proyecto en edición
-let selectedFile = null;  // archivo de imagen principal seleccionado
-
-// Estado de la galería extra
-let galleryItems = [];    // [{id?, url, caption, tipo, orden, file?, isNew}]
+let editingId   = null;
+let editingSlug = null;
+let selectedFile = null;
+let galleryItems = [];
 let dragSrcIdx   = null;
 
 const form        = document.getElementById('project-form');
@@ -22,7 +20,7 @@ const galleryGrid = document.getElementById('gallery-grid');
 const dropZone    = document.getElementById('drop-zone');
 const fileInput   = document.getElementById('f-gallery');
 
-// ---------- Auth guard ----------
+// ---------- Auth ----------
 async function requireAuth() {
   const { data } = await supabaseClient.auth.getSession();
   if (!data.session) { location.href = 'login.html'; return false; }
@@ -33,7 +31,7 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   location.href = 'login.html';
 });
 
-// ---------- Cargar listado ----------
+// ---------- Listado ----------
 async function loadProyectos() {
   const { data, error } = await supabaseClient
     .from('proyectos').select('*').order('num', { ascending: true });
@@ -66,7 +64,7 @@ listEl.addEventListener('click', e => {
   if (delId)  deleteProyecto(delId);
 });
 
-// ---------- Editar proyecto ----------
+// ---------- Editar ----------
 async function startEdit(id) {
   const p = currentProyectos.find(x => x.id === id);
   if (!p) return;
@@ -85,10 +83,9 @@ async function startEdit(id) {
 
   const preview = document.getElementById('img-preview');
   if (p.img_url) { preview.src = p.img_url; preview.style.display = 'block'; }
-  else { preview.style.display = 'none'; }
+  else preview.style.display = 'none';
   selectedFile = null;
 
-  // Cargar imágenes extra de la galería
   await loadGallery(p.slug);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -96,9 +93,7 @@ async function startEdit(id) {
 cancelBtn.addEventListener('click', resetForm);
 
 function resetForm() {
-  editingId   = null;
-  editingSlug = null;
-  selectedFile = null;
+  editingId = editingSlug = selectedFile = null;
   form.reset();
   formTitle.textContent = 'Nuevo proyecto';
   cancelBtn.style.display = 'none';
@@ -108,7 +103,6 @@ function resetForm() {
   renderGallery();
 }
 
-// ---------- Preview imagen principal ----------
 document.getElementById('f-image').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -121,15 +115,14 @@ document.getElementById('f-image').addEventListener('change', e => {
 // ---------- Borrar proyecto ----------
 async function deleteProyecto(id) {
   const p = currentProyectos.find(x => x.id === id);
-  if (!p) return;
-  if (!confirm(`¿Borrar "${p.title}"? Esta acción no se puede deshacer.`)) return;
+  if (!p || !confirm(`¿Borrar "${p.title}"?`)) return;
   const { error } = await supabaseClient.from('proyectos').delete().eq('id', id);
   if (error) { alert('Error: ' + error.message); return; }
   if (editingId === id) resetForm();
   await loadProyectos();
 }
 
-// ---------- Subir imagen a Storage ----------
+// ---------- Subir imagen ----------
 async function uploadImage(file, prefix) {
   const ext  = file.name.split('.').pop();
   const path = `${prefix}-${Date.now()}.${ext}`;
@@ -140,35 +133,55 @@ async function uploadImage(file, prefix) {
 }
 
 // ============================================================
-// GALERÍA EXTRA
+// GALERÍA
 // ============================================================
 
 async function loadGallery(slug) {
   const { data, error } = await supabaseClient
-    .from('proyecto_imagenes')
-    .select('*')
-    .eq('proyecto_slug', slug)
-    .order('orden', { ascending: true });
-  if (error) { console.error(error); galleryItems = []; }
-  else { galleryItems = data.map(r => ({ ...r, isNew: false })); }
+    .from('proyecto_imagenes').select('*')
+    .eq('proyecto_slug', slug).order('orden', { ascending: true });
+  galleryItems = error ? [] : data.map(r => ({ ...r, isNew: false }));
   renderGallery();
+}
+
+// Cuenta cuántos párrafos tiene la descripción actual
+function countParrafos() {
+  const desc = document.getElementById('f-desc').value.trim();
+  if (!desc) return 1;
+  return desc.split(/\n\s*\n/).filter(p => p.trim()).length || 1;
 }
 
 function renderGallery() {
   galleryGrid.innerHTML = '';
+  const numParrafos = countParrafos();
+
   galleryItems.forEach((item, idx) => {
     const div = document.createElement('div');
     div.className = 'gallery-item';
     div.draggable = true;
     div.dataset.idx = idx;
+
+    // Opciones de posición para imágenes de contenido
+    let posOptions = '';
+    for (let n = 1; n <= numParrafos; n++) {
+      posOptions += `<option value="${n}" ${item.posicion == n ? 'selected' : ''}>
+        Tras párrafo ${n}${n === numParrafos ? ' (al final)' : ''}
+      </option>`;
+    }
+
     div.innerHTML = `
-      <img src="${item.url}" alt="${item.caption || ''}">
+      <img src="${item.url}" alt="${item.caption || ''}" loading="lazy">
       <div class="gi-controls">
         <div class="gi-type">
-          <button type="button" class="${item.tipo === 'galeria' ? 'active' : ''}"
+          <button type="button" class="${item.tipo === 'galeria'   ? 'active' : ''}"
             onclick="setTipo(${idx},'galeria')">Galería</button>
           <button type="button" class="${item.tipo === 'contenido' ? 'active' : ''}"
             onclick="setTipo(${idx},'contenido')">Contenido</button>
+        </div>
+        <div class="gi-pos" style="display:${item.tipo === 'contenido' ? 'block' : 'none'}">
+          <select class="gi-pos-select" onchange="galleryItems[${idx}].posicion=parseInt(this.value)">
+            ${posOptions}
+          </select>
         </div>
         <div class="gi-caption">
           <input type="text" placeholder="Pie de foto (opcional)"
@@ -185,10 +198,9 @@ function renderGallery() {
       setTimeout(() => div.classList.add('dragging'), 0);
       e.dataTransfer.effectAllowed = 'move';
     });
-    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    div.addEventListener('dragend',  () => div.classList.remove('dragging'));
     div.addEventListener('dragover', e => {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
       galleryGrid.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('drag-over'));
       div.classList.add('drag-over');
     });
@@ -207,8 +219,13 @@ function renderGallery() {
   });
 }
 
+// Cuando cambia la descripción, re-renderizar galería para actualizar los selectores
+document.getElementById('f-desc').addEventListener('input', () => renderGallery());
+
 function setTipo(idx, tipo) {
   galleryItems[idx].tipo = tipo;
+  if (tipo === 'galeria') galleryItems[idx].posicion = null;
+  if (tipo === 'contenido' && !galleryItems[idx].posicion) galleryItems[idx].posicion = 1;
   renderGallery();
 }
 
@@ -217,28 +234,28 @@ function removeGalleryItem(idx) {
   renderGallery();
 }
 
-// Drop zone para subir nuevas imágenes
+// Drop zone
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  handleGalleryFiles(e.dataTransfer.files);
-});
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleGalleryFiles(e.dataTransfer.files); });
 fileInput.addEventListener('change', e => handleGalleryFiles(e.target.files));
 
 function handleGalleryFiles(files) {
   Array.from(files).forEach(file => {
-    const url = URL.createObjectURL(file);
-    galleryItems.push({ url, caption: '', tipo: 'galeria', orden: galleryItems.length, file, isNew: true });
+    galleryItems.push({
+      url: URL.createObjectURL(file),
+      caption: '', tipo: 'galeria',
+      posicion: null,
+      orden: galleryItems.length,
+      file, isNew: true
+    });
   });
   renderGallery();
 }
 
-// Guardar las imágenes extra en Supabase
 async function saveGallery(slug) {
-  // 1. Subir archivos nuevos
+  // Subir archivos nuevos
   for (let item of galleryItems) {
     if (item.isNew && item.file) {
       item.url = await uploadImage(item.file, slug + '-gallery');
@@ -246,24 +263,22 @@ async function saveGallery(slug) {
       item.isNew = false;
     }
   }
-
-  // 2. Borrar las existentes en BD para este slug y reinsertarlas con el orden nuevo
-  const { error: delError } = await supabaseClient
+  // Borrar las existentes y reinsertar con orden actualizado
+  const { error: delErr } = await supabaseClient
     .from('proyecto_imagenes').delete().eq('proyecto_slug', slug);
-  if (delError) throw new Error('Error al actualizar galería: ' + delError.message);
-
+  if (delErr) throw new Error('Error al actualizar galería: ' + delErr.message);
   if (galleryItems.length === 0) return;
 
   const rows = galleryItems.map((item, i) => ({
     proyecto_slug: slug,
-    url:     item.url,
-    caption: item.caption || null,
-    tipo:    item.tipo || 'galeria',
-    orden:   i,
+    url:      item.url,
+    caption:  item.caption || null,
+    tipo:     item.tipo || 'galeria',
+    orden:    i,
+    posicion: item.tipo === 'contenido' ? (item.posicion || 1) : null,
   }));
-
-  const { error: insError } = await supabaseClient.from('proyecto_imagenes').insert(rows);
-  if (insError) throw new Error('Error al guardar galería: ' + insError.message);
+  const { error: insErr } = await supabaseClient.from('proyecto_imagenes').insert(rows);
+  if (insErr) throw new Error('Error al guardar galería: ' + insErr.message);
 }
 
 // ============================================================
@@ -279,7 +294,6 @@ form.addEventListener('submit', async e => {
     const slug = document.getElementById('f-slug').value.trim().toLowerCase();
     if (!/^[a-z0-9\-]+$/.test(slug)) throw new Error('El slug solo puede tener letras minúsculas, números y guiones.');
 
-    // Imagen principal
     let imgUrl = document.getElementById('img-preview').src;
     if (selectedFile) imgUrl = await uploadImage(selectedFile, slug);
     if (!editingId && !selectedFile) throw new Error('Sube una imagen principal para el proyecto.');
@@ -315,9 +329,7 @@ form.addEventListener('submit', async e => {
       throw new Error(error.message);
     }
 
-    // Guardar galería extra (usando el slug definitivo)
-    const finalSlug = editingSlug || slug;
-    await saveGallery(finalSlug);
+    await saveGallery(editingSlug || slug);
 
     formMsg.className = 'ok';
     formMsg.textContent = editingId ? 'Proyecto actualizado.' : 'Proyecto creado.';

@@ -198,13 +198,16 @@ img{display:block;max-width:100%;}
   padding:2px 8px;border-radius:10px;white-space:nowrap;
 }
 .grid-card .card-title{
+  display:block;
   font-family:var(--serif);font-weight:600;font-size:1.05rem;
-  text-align:center;color:var(--ink);margin-bottom:10px;transition:color .2s ease;
+  text-align:center;color:var(--ink);margin-bottom:0;
+  padding-bottom:8px;transition:color .2s ease;
 }
 .grid-card:hover .card-title{color:var(--clay);}
 .grid-card .card-excerpt{
+  display:block;
   font-size:0.84rem;line-height:1.5;color:#5b594e;
-  text-align:center;max-width:24ch;margin:8px auto 6px;
+  text-align:center;max-width:24ch;margin:0 auto 6px;
 }
 .grid-card .card-tags{
   text-align:center;font-family:var(--mono);font-size:0.7rem;color:var(--stone);

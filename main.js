@@ -2,18 +2,42 @@
 (function(){
   var btn = document.getElementById('navtoggle');
   var nav = document.getElementById('mainnav');
-  if(btn && nav){
-    btn.addEventListener('click', function(){
-      nav.classList.toggle('open');
-      btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
-    });
-    nav.querySelectorAll('a').forEach(function(a){
-      a.addEventListener('click', function(){
-        nav.classList.remove('open');
-        btn.textContent = '☰';
-      });
-    });
+  if(!btn || !nav) return;
+
+  // Crear overlay dinámicamente
+  var overlay = document.createElement('div');
+  overlay.className = 'nav-overlay';
+  document.body.appendChild(overlay);
+
+  function openMenu(){
+    nav.classList.add('open');
+    overlay.classList.add('open');
+    btn.textContent = '✕';
+    document.body.style.overflow = 'hidden';
   }
+  function closeMenu(){
+    nav.classList.remove('open');
+    overlay.classList.remove('open');
+    btn.textContent = '☰';
+    document.body.style.overflow = '';
+  }
+
+  btn.addEventListener('click', function(){
+    nav.classList.contains('open') ? closeMenu() : openMenu();
+  });
+
+  // Cerrar al pulsar el overlay
+  overlay.addEventListener('click', closeMenu);
+
+  // Cerrar al navegar
+  nav.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', closeMenu);
+  });
+
+  // Cerrar con Escape
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeMenu();
+  });
 })();
 
 // ---------- Helpers ----------

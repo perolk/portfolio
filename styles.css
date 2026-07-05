@@ -12,7 +12,7 @@
   --sans:'Inter', sans-serif;
   --mono:'JetBrains Mono', monospace;
   --maxw:1280px;
-  --gutter:clamp(16px, 4vw, 64px);
+  --gutter:clamp(20px, 5vw, 64px);
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -68,15 +68,24 @@ img{display:block;max-width:100%;}
 @media(max-width:720px){
   .topbar .wrap{height:54px;}
   .mainnav{
-    position:fixed;inset:54px 0 0 0;background:var(--paper);
-    flex-direction:column;padding:28px var(--gutter);gap:20px;
+    position:fixed;top:54px;left:0;right:0;
+    height:auto;max-height:calc(100vh - 54px);
+    background:var(--paper);
+    flex-direction:column;padding:28px var(--gutter) 40px;gap:20px;
     font-size:1rem;transform:translateY(-8px);opacity:0;pointer-events:none;
     transition:opacity .2s ease,transform .2s ease;
-    border-top:1px solid var(--line);
-    z-index:49;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    box-shadow:0 8px 24px rgba(23,22,15,0.12);
+    z-index:49;overflow-y:auto;
   }
   .mainnav.open{opacity:1;pointer-events:auto;transform:translateY(0);}
   .navtoggle{display:block;}
+  /* Overlay oscuro al abrir el menú */
+  .nav-overlay{
+    display:none;position:fixed;inset:54px 0 0 0;
+    background:rgba(23,22,15,0.4);z-index:48;
+  }
+  .nav-overlay.open{display:block;}
 }
 
 /* ---------- Hero ---------- */
@@ -332,6 +341,15 @@ img{display:block;max-width:100%;}
     flex-direction:column;gap:12px;padding:20px 0;
   }
   .detail-nav .next{text-align:left;}
+}
+@media(max-width:480px){
+  /* Más margen lateral en fichas para móvil pequeño */
+  .detail-hero .backlink{margin-bottom:20px;}
+  .detail-hero .plate{font-size:0.65rem;}
+  .detail-body{padding:24px 0;}
+  .body-copy p{font-size:0.95rem;line-height:1.65;}
+  .spec-list dt{font-size:0.62rem;}
+  .spec-list dd{font-size:0.9rem;}
 }
 
 @media(max-width:480px){

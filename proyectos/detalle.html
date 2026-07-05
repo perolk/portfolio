@@ -68,7 +68,7 @@
 <footer>
   <div class="wrap">
     <span>© 2026 Elías Torres</span>
-    <a href="../contacto.html" class="cta-hablemos"><strong>Hablemos</strong> de tu proyecto →</a>
+    <a href="../contacto.html">Hablemos de tu proyecto →</a>
   </div>
 </footer>
 
@@ -87,12 +87,16 @@
 (function(){
   var btn = document.getElementById('navtoggle');
   var nav = document.getElementById('mainnav');
-  if(btn && nav){
-    btn.addEventListener('click', function(){
-      nav.classList.toggle('open');
-      btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
-    });
-  }
+  if(!btn || !nav) return;
+  var overlay = document.createElement('div');
+  overlay.className = 'nav-overlay';
+  document.body.appendChild(overlay);
+  function openMenu(){ nav.classList.add('open'); overlay.classList.add('open'); btn.textContent='✕'; document.body.style.overflow='hidden'; }
+  function closeMenu(){ nav.classList.remove('open'); overlay.classList.remove('open'); btn.textContent='☰'; document.body.style.overflow=''; }
+  btn.addEventListener('click', function(){ nav.classList.contains('open') ? closeMenu() : openMenu(); });
+  overlay.addEventListener('click', closeMenu);
+  nav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
 })();
 
 const FIELD_LABELS = [

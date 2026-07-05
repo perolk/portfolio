@@ -55,9 +55,9 @@ function renderGridView(proyectos){
           '<img src="'+p.img+'" alt="'+p.title+'" loading="lazy">' +
           '<span class="card-plate">Pl. '+p.num+'</span>' +
         '</span>' +
-        '<span class="card-title">'+p.title+'</span>' +
-        '<span class="card-excerpt">'+excerpt(p.descripcion, 80)+'</span>' +
-        '<span class="card-tags">'+tags+'</span>' +
+        '<div class="card-title">'+p.title+'</div>' +
+        '<div class="card-excerpt">'+excerpt(p.descripcion, 80)+'</div>' +
+        '<div class="card-tags">'+tags+'</div>' +
       '</a>'
     );
   }).join('');

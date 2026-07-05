@@ -177,11 +177,17 @@ img{display:block;max-width:100%;}
   display:grid;grid-template-columns:repeat(4,1fr);
   gap:48px 28px;padding:8px 0 60px;
 }
-.grid-card{display:block;text-decoration:none;}
+.grid-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-decoration:none;
+}
 .grid-card .card-fig{
   width:168px;height:168px;border-radius:50%;
   overflow:hidden;background:var(--paper-dim);
-  margin:0 auto 22px;position:relative;display:block;
+  margin:0 auto 16px;position:relative;
+  flex-shrink:0;
   border:1px solid var(--line);
   transition:border-color .3s ease, box-shadow .3s ease;
 }
@@ -198,18 +204,20 @@ img{display:block;max-width:100%;}
   padding:2px 8px;border-radius:10px;white-space:nowrap;
 }
 .grid-card .card-title{
-  display:block;
+  width:100%;
   font-family:var(--serif);font-weight:600;font-size:1.05rem;
-  text-align:center;color:var(--ink);margin-bottom:0;
-  padding-bottom:8px;transition:color .2s ease;
+  text-align:center;color:var(--ink);
+  margin-bottom:8px;
+  transition:color .2s ease;
 }
 .grid-card:hover .card-title{color:var(--clay);}
 .grid-card .card-excerpt{
-  display:block;
+  width:100%;
   font-size:0.84rem;line-height:1.5;color:#5b594e;
   text-align:center;max-width:24ch;margin:0 auto 6px;
 }
 .grid-card .card-tags{
+  width:100%;
   text-align:center;font-family:var(--mono);font-size:0.7rem;color:var(--stone);
 }
 .grid-card .card-tags span{

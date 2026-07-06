@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proyecto — Elías Torres, arquitecto</title>
+<meta name="description" content="">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<!-- Open Graph (se rellena dinámicamente con JS) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Elías Torres, arquitecto">
+<meta property="og:title" content="Elías Torres, arquitecto">
+<meta property="og:description" content="">
+<meta property="og:image" content="">
+<meta property="og:url" content="">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Elías Torres, arquitecto">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="">
 <link rel="stylesheet" href="../styles.css">
 <style>
 .content-img{margin:32px 0;}
@@ -218,6 +231,19 @@ async function init(){
   const next = proyectos[(i+1)%total];
 
   document.title = `${p.title} — Elías Torres, arquitecto`;
+
+  // Actualizar meta tags Open Graph dinámicamente
+  const desc = p.descripcion ? p.descripcion.slice(0, 160) : '';
+  const url  = location.href;
+  const setMeta = (sel, val) => { const el = document.querySelector(sel); if(el) el.setAttribute('content', val); };
+  setMeta('meta[name="description"]',          desc);
+  setMeta('meta[property="og:title"]',         `${p.title} — Elías Torres, arquitecto`);
+  setMeta('meta[property="og:description"]',   desc);
+  setMeta('meta[property="og:image"]',         p.img);
+  setMeta('meta[property="og:url"]',           url);
+  setMeta('meta[name="twitter:title"]',        `${p.title} — Elías Torres, arquitecto`);
+  setMeta('meta[name="twitter:description"]',  desc);
+  setMeta('meta[name="twitter:image"]',        p.img);
   document.getElementById('d-plate').textContent = `Lámina ${p.num} / ${total}${p.year?' · '+p.year:''}`;
   document.getElementById('d-title').textContent = p.title;
   document.getElementById('d-img').src = p.img;

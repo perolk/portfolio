@@ -49,7 +49,7 @@ function renderList() {
     <div class="admin-row">
       <img src="${p.img_url || ''}" alt="">
       <div>
-        <div class="num">Pl. ${String(p.num).padStart(2,'0')}</div>
+        <div class="num">Pl. ${String(p.num).padStart(2,'0')} ${p.publicado === false ? '<span class="badge-borrador">BORRADOR</span>' : ''}</div>
         <div class="title">${p.title}</div>
       </div>
       <div class="actions"><button data-edit="${p.id}">Editar</button></div>
@@ -85,6 +85,8 @@ async function startEdit(id) {
   if (p.img_url) { preview.src = p.img_url; preview.style.display = 'block'; }
   else preview.style.display = 'none';
   selectedFile = null;
+  const pubCheck = document.getElementById('f-publicado');
+  if(pubCheck) pubCheck.checked = p.publicado !== false;
 
   await loadGallery(p.slug);
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -300,10 +302,19 @@ form.addEventListener('submit', async e => {
 
     const tags = document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean);
 
+    const num = parseInt(document.getElementById('f-num').value, 10);
+    const publicado = document.getElementById('f-publicado').checked;
+
+    // Validar número de lámina duplicado
+    const numDuplicado = currentProyectos.find(p =>
+      p.num === num && p.id !== editingId
+    );
+    if(numDuplicado) throw new Error(`El número de lámina ${num} ya lo usa "${numDuplicado.title}". Elige otro.`);
+
     const payload = {
       title:       document.getElementById('f-title').value.trim(),
       slug,
-      num:         parseInt(document.getElementById('f-num').value, 10),
+      num,
       year:        document.getElementById('f-year').value.trim(),
       lugar:       document.getElementById('f-lugar').value.trim(),
       cliente:     document.getElementById('f-cliente').value.trim(),
@@ -315,6 +326,7 @@ form.addEventListener('submit', async e => {
       descripcion: document.getElementById('f-desc').value.trim(),
       tags,
       img_url:     imgUrl,
+      publicado,
       updated_at:  new Date().toISOString(),
     };
 

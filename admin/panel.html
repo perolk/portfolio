@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Panel privado — Elías Torres</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../styles.css">
 <style>
 .admin-wrap{padding:50px 0 100px;}
@@ -111,6 +112,27 @@
 }
 .gi-pos-select option{background:var(--ink);color:#fff;}
 .gallery-uploading{font-family:var(--mono);font-size:0.72rem;color:var(--stone);padding:8px 0;display:none;}
+
+/* Badge borrador */
+.badge-borrador{
+  font-family:var(--mono);font-size:0.6rem;text-transform:uppercase;
+  letter-spacing:0.06em;background:var(--clay-soft);color:var(--clay);
+  padding:2px 6px;border-radius:2px;margin-left:6px;vertical-align:middle;
+}
+/* Toggle publicado */
+.toggle-publicado{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:0.72rem;text-transform:uppercase;
+  letter-spacing:0.05em;color:var(--stone);
+  padding:12px 0;border-top:1px solid var(--line);margin-top:8px;
+}
+.toggle-publicado input[type=checkbox]{
+  width:18px;height:18px;accent-color:var(--clay);cursor:pointer;flex-shrink:0;
+}
+.toggle-publicado .toggle-desc{
+  font-size:0.7rem;color:var(--stone);text-transform:none;letter-spacing:0;
+  margin-top:2px;font-family:var(--sans);
+}
 </style>
 </head>
 <body>
@@ -193,6 +215,14 @@
       </div>
 
       <!-- ===== GALERÍA EXTRA ===== -->
+      <div class="toggle-publicado">
+        <input type="checkbox" id="f-publicado" checked>
+        <div>
+          <div>Publicado en la web</div>
+          <div class="toggle-desc">Desmarca para guardar como borrador (no aparecerá en la web pública)</div>
+        </div>
+      </div>
+
       <hr class="section-divider">
       <p class="section-label">Imágenes adicionales de la ficha</p>
 

@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contacto — Elías Torres, arquitecto</title>
-<meta name="description" content="Contacta con Elías Torres para tu próximo proyecto de arquitectura.">
+<meta name="description" content="Contacta con Elías Torres para tu próximo proyecto de arquitectura en Madrid y Zaragoza.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -32,15 +33,21 @@
         <dt>Teléfono</dt>
         <dd><a href="tel:+34600000000">+34 600 000 000</a></dd>
 
-        <dt>Sede</dt>
-        <dd>Madrid &amp; Zaragoza, España</dd>
+        <dt>Estudio</dt>
+        <dd>C/ Condes de Aragón 36<br>50009 Zaragoza, España</dd>
 
         <dt>Redes</dt>
         <dd><a href="https://www.linkedin.com/in/eliastorresgil" target="_blank" rel="noopener">LinkedIn</a></dd>
       </dl>
     </div>
     <div class="contact-map">
-      Sustituye este bloque por un mapa embebido (Google Maps / Mapbox) cuando tengas la dirección definitiva del estudio.
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2994.0!2d-0.8890!3d41.6390!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd5914e8f2b1e2b5%3A0x0!2sC%2F+Condes+de+Arag%C3%B3n+36%2C+50009+Zaragoza!5e0!3m2!1ses!2ses!4v1"
+        width="100%" height="100%" style="border:0;display:block;min-height:280px;" 
+        allowfullscreen="" loading="lazy" 
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Ubicación del estudio">
+      </iframe>
     </div>
   </section>
 </main>
@@ -56,12 +63,16 @@
 (function(){
   var btn = document.getElementById('navtoggle');
   var nav = document.getElementById('mainnav');
-  if(btn && nav){
-    btn.addEventListener('click', function(){
-      nav.classList.toggle('open');
-      btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
-    });
-  }
+  if(!btn || !nav) return;
+  var overlay = document.createElement('div');
+  overlay.className = 'nav-overlay';
+  document.body.appendChild(overlay);
+  function openMenu(){ nav.classList.add('open'); overlay.classList.add('open'); btn.textContent='✕'; document.body.style.overflow='hidden'; }
+  function closeMenu(){ nav.classList.remove('open'); overlay.classList.remove('open'); btn.textContent='☰'; document.body.style.overflow=''; }
+  btn.addEventListener('click', function(){ nav.classList.contains('open') ? closeMenu() : openMenu(); });
+  overlay.addEventListener('click', closeMenu);
+  nav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
 })();
 </script>
 </body>

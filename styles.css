@@ -12,7 +12,7 @@
   --sans:'Inter', sans-serif;
   --mono:'JetBrains Mono', monospace;
   --maxw:1280px;
-  --gutter:clamp(20px, 5vw, 64px);
+  --gutter:clamp(24px, 5vw, 64px);
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -479,6 +479,23 @@ footer .cta-hablemos:hover strong{opacity:0.8;}
 .lb-prev{left:0;}.lb-next{right:0;}
 
 /* ---------- Accesibilidad y preferencias ---------- */
+/* ---------- Márgenes móvil ---------- */
+@media(max-width:480px){
+  :root{--gutter:24px;}
+  /* Asegurar que ningún texto llegue al borde */
+  .wrap{padding-left:24px;padding-right:24px;}
+  .detail-hero .backlink,
+  .detail-hero .plate,
+  .detail-hero h1{padding-left:0;padding-right:0;}
+  /* Contacto: asegurar margen */
+  .contact-grid{padding-left:0;padding-right:0;}
+  .contact-grid h1{font-size:2rem;}
+  /* CV: consistente */
+  .cv-section h2{padding-left:0;}
+  /* Footer */
+  footer .wrap{padding-left:24px;padding-right:24px;}
+}
+
 @media(prefers-reduced-motion: reduce){
   *{transition:none !important;scroll-behavior:auto !important;}
 }

@@ -363,16 +363,16 @@ img{display:block;max-width:100%;}
   font-family:var(--mono);font-size:0.72rem;letter-spacing:0.1em;
   text-transform:uppercase;color:var(--clay);margin-bottom:22px;
 }
-.cv-grid{display:grid;grid-template-columns:180px 1fr;gap:8px 28px;}
-.cv-grid .when{font-family:var(--mono);font-size:0.82rem;color:var(--stone);}
-.cv-grid .what{font-size:0.98rem;}
+.cv-grid{display:block;}
+.cv-entry{margin-bottom:28px;}
+.cv-grid .when{
+  display:block;
+  font-family:var(--mono);font-size:0.75rem;color:var(--stone);
+  margin-bottom:4px;letter-spacing:0.03em;
+}
+.cv-grid .what{display:block;font-size:0.98rem;}
 .cv-grid .what .role{font-weight:600;}
 .cv-grid .what .place{color:var(--stone);}
-.cv-entry{margin-bottom:20px;}
-@media(max-width:600px){
-  .cv-grid{grid-template-columns:1fr;}
-  .cv-grid .when{margin-bottom:2px;font-size:0.75rem;}
-}
 .skills-cloud{display:flex;flex-wrap:wrap;gap:8px;}
 .skills-cloud span{
   font-family:var(--mono);font-size:0.75rem;border:1px solid var(--line);
@@ -482,18 +482,18 @@ footer .cta-hablemos:hover strong{opacity:0.8;}
 /* ---------- Márgenes móvil ---------- */
 @media(max-width:480px){
   :root{--gutter:24px;}
-  /* Asegurar que ningún texto llegue al borde */
-  .wrap{padding-left:24px;padding-right:24px;}
+  /* Margen lateral consistente en todos los contenedores */
+  .wrap{padding-left:24px !important;padding-right:24px !important;}
+  /* Elementos dentro del wrap que no deben añadir padding extra */
   .detail-hero .backlink,
   .detail-hero .plate,
-  .detail-hero h1{padding-left:0;padding-right:0;}
-  /* Contacto: asegurar margen */
-  .contact-grid{padding-left:0;padding-right:0;}
+  .detail-hero h1,
+  .contact-grid h1,
+  .cv-section h2,
+  .cv-grid{padding-left:0;padding-right:0;}
+  /* Tamaños de texto adaptados */
   .contact-grid h1{font-size:2rem;}
-  /* CV: consistente */
-  .cv-section h2{padding-left:0;}
-  /* Footer */
-  footer .wrap{padding-left:24px;padding-right:24px;}
+  .cv-section{padding:28px 0;}
 }
 
 @media(prefers-reduced-motion: reduce){

@@ -1,5 +1,6 @@
 // ============================================================
 // PANEL PRIVADO — admin.js
+// Layout: vista listado / vista edición a pantalla completa
 // ============================================================
 
 let currentProyectos = [];
@@ -9,21 +10,43 @@ let selectedFile = null;
 let galleryItems = [];
 let dragSrcIdx   = null;
 
+// Elementos UI
+const viewList    = document.getElementById('view-list');
+const viewEdit    = document.getElementById('view-edit');
 const form        = document.getElementById('project-form');
 const listEl      = document.getElementById('admin-list');
 const countLabel  = document.getElementById('count-label');
 const formMsg     = document.getElementById('form-msg');
 const saveBtn     = document.getElementById('save-btn');
-const cancelBtn   = document.getElementById('cancel-btn');
-const formTitle   = document.getElementById('form-title');
+const editTitle   = document.getElementById('edit-title');
 const galleryGrid = document.getElementById('gallery-grid');
 const dropZone    = document.getElementById('drop-zone');
 const fileInput   = document.getElementById('f-gallery');
 
+// ---------- Navegación entre vistas ----------
+function showList(){
+  viewList.style.display = 'block';
+  viewEdit.style.display = 'none';
+  window.scrollTo(0,0);
+}
+function showEdit(){
+  viewList.style.display = 'none';
+  viewEdit.style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+document.getElementById('btn-new').addEventListener('click', () => {
+  resetForm();
+  editTitle.textContent = 'Nuevo proyecto';
+  showEdit();
+});
+document.getElementById('btn-back').addEventListener('click', () => { resetForm(); showList(); });
+document.getElementById('btn-back2').addEventListener('click', () => { resetForm(); showList(); });
+
 // ---------- Auth ----------
-async function requireAuth() {
+async function requireAuth(){
   const { data } = await supabaseClient.auth.getSession();
-  if (!data.session) { location.href = 'login.html'; return false; }
+  if(!data.session){ location.href = 'login.html'; return false; }
   return true;
 }
 document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -31,12 +54,12 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   location.href = 'login.html';
 });
 
-// ---------- Listado ----------
-async function loadProyectos() {
+// ---------- Cargar listado ----------
+async function loadProyectos(){
   const { data, error } = await supabaseClient
     .from('proyectos').select('*').order('num', { ascending: true });
-  if (error) {
-    listEl.innerHTML = `<p style="color:var(--clay);font-family:var(--mono);font-size:.8rem;">Error: ${error.message}</p>`;
+  if(error){
+    listEl.innerHTML = `<p style="color:var(--clay);font-family:var(--mono);font-size:.8rem;padding:20px 0;">Error: ${error.message}</p>`;
     return;
   }
   currentProyectos = data;
@@ -44,93 +67,98 @@ async function loadProyectos() {
   renderList();
 }
 
-function renderList() {
+function renderList(){
   listEl.innerHTML = currentProyectos.map(p => `
     <div class="admin-row">
       <img src="${p.img_url || ''}" alt="">
       <div>
-        <div class="num">Pl. ${String(p.num).padStart(2,'0')} ${p.publicado === false ? '<span class="badge-borrador">BORRADOR</span>' : ''}</div>
-        <div class="title">${p.title}</div>
+        <div class="anum">Pl. ${String(p.num).padStart(2,'0')}
+          ${p.publicado === false ? '<span class="abadge">BORRADOR</span>' : ''}
+        </div>
+        <div class="atitle">${p.title}</div>
       </div>
-      <div class="actions"><button data-edit="${p.id}">Editar</button></div>
-      <div class="actions"><button data-delete="${p.id}" class="danger">Borrar</button></div>
+      <button class="abtn" data-edit="${p.id}">Editar</button>
+      <button class="abtn danger" data-delete="${p.id}">Borrar</button>
     </div>`).join('');
 }
 
 listEl.addEventListener('click', e => {
-  const editId = e.target.dataset.edit;
-  const delId  = e.target.dataset.delete;
-  if (editId) startEdit(editId);
-  if (delId)  deleteProyecto(delId);
+  const editId   = e.target.dataset.edit;
+  const deleteId = e.target.dataset.delete;
+  if(editId)   startEdit(editId);
+  if(deleteId) deleteProyecto(deleteId);
 });
 
 // ---------- Editar ----------
-async function startEdit(id) {
+async function startEdit(id){
   const p = currentProyectos.find(x => x.id === id);
-  if (!p) return;
+  if(!p) return;
   editingId   = id;
   editingSlug = p.slug;
-  formTitle.textContent = `Editando: ${p.title}`;
-  cancelBtn.style.display = 'block';
+  editTitle.textContent = `Editando: ${p.title}`;
 
   ['title','slug','year','lugar','cliente','programa','edificio','arquitecto','zona','software'].forEach(k => {
     const el = document.getElementById('f-' + k);
-    if (el) el.value = p[k] || '';
+    if(el) el.value = p[k] || '';
   });
   document.getElementById('f-num').value  = p.num || '';
   document.getElementById('f-tags').value = (p.tags || []).join(', ');
   document.getElementById('f-desc').value = p.descripcion || '';
+  document.getElementById('f-publicado').checked = p.publicado !== false;
 
   const preview = document.getElementById('img-preview');
-  if (p.img_url) { preview.src = p.img_url; preview.style.display = 'block'; }
-  else preview.style.display = 'none';
+  const noImg   = document.getElementById('img-no-img');
+  if(p.img_url){
+    preview.src = p.img_url;
+    preview.style.display = 'block';
+    noImg.style.display = 'none';
+  } else {
+    preview.style.display = 'none';
+    noImg.style.display = 'flex';
+  }
   selectedFile = null;
-  const pubCheck = document.getElementById('f-publicado');
-  if(pubCheck) pubCheck.checked = p.publicado !== false;
-
   await loadGallery(p.slug);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showEdit();
 }
 
-cancelBtn.addEventListener('click', resetForm);
-
-function resetForm() {
+function resetForm(){
   editingId = editingSlug = selectedFile = null;
   form.reset();
-  formTitle.textContent = 'Nuevo proyecto';
-  cancelBtn.style.display = 'none';
+  document.getElementById('f-publicado').checked = true;
   document.getElementById('img-preview').style.display = 'none';
-  formMsg.style.display = 'none';
+  document.getElementById('img-no-img').style.display = 'flex';
+  if(formMsg){ formMsg.className = ''; formMsg.style.display = 'none'; }
   galleryItems = [];
   renderGallery();
 }
 
+// ---------- Imagen principal ----------
 document.getElementById('f-image').addEventListener('change', e => {
   const file = e.target.files[0];
-  if (!file) return;
+  if(!file) return;
   selectedFile = file;
   const preview = document.getElementById('img-preview');
   preview.src = URL.createObjectURL(file);
   preview.style.display = 'block';
+  document.getElementById('img-no-img').style.display = 'none';
 });
 
 // ---------- Borrar proyecto ----------
-async function deleteProyecto(id) {
+async function deleteProyecto(id){
   const p = currentProyectos.find(x => x.id === id);
-  if (!p || !confirm(`¿Borrar "${p.title}"?`)) return;
+  if(!p || !confirm(`¿Borrar "${p.title}"? Esta acción no se puede deshacer.`)) return;
   const { error } = await supabaseClient.from('proyectos').delete().eq('id', id);
-  if (error) { alert('Error: ' + error.message); return; }
-  if (editingId === id) resetForm();
+  if(error){ alert('Error: ' + error.message); return; }
   await loadProyectos();
 }
 
 // ---------- Subir imagen ----------
-async function uploadImage(file, prefix) {
+async function uploadImage(file, prefix){
   const ext  = file.name.split('.').pop();
   const path = `${prefix}-${Date.now()}.${ext}`;
   const { error } = await supabaseClient.storage
     .from('project-images').upload(path, file, { cacheControl: '3600', upsert: false });
-  if (error) throw new Error('Error al subir la imagen: ' + error.message);
+  if(error) throw new Error('Error al subir la imagen: ' + error.message);
   return supabaseClient.storage.from('project-images').getPublicUrl(path).data.publicUrl;
 }
 
@@ -138,7 +166,7 @@ async function uploadImage(file, prefix) {
 // GALERÍA
 // ============================================================
 
-async function loadGallery(slug) {
+async function loadGallery(slug){
   const { data, error } = await supabaseClient
     .from('proyecto_imagenes').select('*')
     .eq('proyecto_slug', slug).order('orden', { ascending: true });
@@ -146,16 +174,16 @@ async function loadGallery(slug) {
   renderGallery();
 }
 
-// Cuenta cuántos párrafos tiene la descripción actual
-function countParrafos() {
+function countParrafos(){
   const desc = document.getElementById('f-desc').value.trim();
-  if (!desc) return 1;
-  return desc.split(/\n\s*\n/).filter(p => p.trim()).length || 1;
+  if(!desc) return 1;
+  const bloques = desc.split(/\n[ \t]*\n/).filter(p => p.trim());
+  return bloques.length > 1 ? bloques.length : (desc.split('\n').filter(p => p.trim()).length || 1);
 }
 
-function renderGallery() {
+function renderGallery(){
   galleryGrid.innerHTML = '';
-  const numParrafos = countParrafos();
+  const numP = countParrafos();
 
   galleryItems.forEach((item, idx) => {
     const div = document.createElement('div');
@@ -163,26 +191,30 @@ function renderGallery() {
     div.draggable = true;
     div.dataset.idx = idx;
 
-    // Opciones de posición para imágenes de contenido
-    let posOptions = '';
-    for (let n = 1; n <= numParrafos; n++) {
-      posOptions += `<option value="${n}" ${item.posicion == n ? 'selected' : ''}>
-        Tras párrafo ${n}${n === numParrafos ? ' (al final)' : ''}
-      </option>`;
+    // Opciones de posición
+    let posOpts = '';
+    for(let n = 1; n <= numP; n++){
+      posOpts += `<option value="${n}" ${item.posicion == n ? 'selected' : ''}>Tras párrafo ${n}${n === numP ? ' (final)' : ''}</option>`;
     }
+
+    const esContenido = item.tipo === 'contenido';
+    const badgeClass  = esContenido ? 'gi-badge contenido' : 'gi-badge';
+    const badgeText   = esContenido ? `Contenido · Tras párr. ${item.posicion || 1}` : 'Galería';
 
     div.innerHTML = `
       <img src="${item.url}" alt="${item.caption || ''}" loading="lazy">
+      <span class="${badgeClass}">${badgeText}</span>
+      <span class="gi-handle">⠿</span>
       <div class="gi-controls">
         <div class="gi-type">
-          <button type="button" class="${item.tipo === 'galeria'   ? 'active' : ''}"
+          <button type="button" class="${!esContenido ? 'active' : ''}"
             onclick="setTipo(${idx},'galeria')">Galería</button>
-          <button type="button" class="${item.tipo === 'contenido' ? 'active' : ''}"
+          <button type="button" class="${esContenido ? 'active' : ''}"
             onclick="setTipo(${idx},'contenido')">Contenido</button>
         </div>
-        <div class="gi-pos" style="display:${item.tipo === 'contenido' ? 'block' : 'none'}">
-          <select class="gi-pos-select" onchange="galleryItems[${idx}].posicion=parseInt(this.value)">
-            ${posOptions}
+        <div class="gi-pos" style="display:${esContenido ? 'block' : 'none'}">
+          <select onchange="galleryItems[${idx}].posicion=parseInt(this.value);renderGallery()">
+            ${posOpts}
           </select>
         </div>
         <div class="gi-caption">
@@ -191,10 +223,9 @@ function renderGallery() {
             oninput="galleryItems[${idx}].caption=this.value">
         </div>
       </div>
-      <button type="button" class="gi-del" onclick="removeGalleryItem(${idx})">✕</button>
-      <span class="gi-handle">⠿</span>`;
+      <button type="button" class="gi-del" onclick="removeGalleryItem(${idx})">✕</button>`;
 
-    // Drag-to-reorder
+    // Drag reorder
     div.addEventListener('dragstart', e => {
       dragSrcIdx = idx;
       setTimeout(() => div.classList.add('dragging'), 0);
@@ -210,7 +241,7 @@ function renderGallery() {
     div.addEventListener('drop', e => {
       e.preventDefault();
       div.classList.remove('drag-over');
-      if (dragSrcIdx === null || dragSrcIdx === idx) return;
+      if(dragSrcIdx === null || dragSrcIdx === idx) return;
       const moved = galleryItems.splice(dragSrcIdx, 1)[0];
       galleryItems.splice(idx, 0, moved);
       dragSrcIdx = null;
@@ -221,55 +252,49 @@ function renderGallery() {
   });
 }
 
-// Cuando cambia la descripción, re-renderizar galería para actualizar los selectores
 document.getElementById('f-desc').addEventListener('input', () => renderGallery());
 
-function setTipo(idx, tipo) {
+function setTipo(idx, tipo){
   galleryItems[idx].tipo = tipo;
-  if (tipo === 'galeria') galleryItems[idx].posicion = null;
-  if (tipo === 'contenido' && !galleryItems[idx].posicion) galleryItems[idx].posicion = 1;
+  if(tipo === 'galeria') galleryItems[idx].posicion = null;
+  if(tipo === 'contenido' && !galleryItems[idx].posicion) galleryItems[idx].posicion = 1;
   renderGallery();
 }
 
-function removeGalleryItem(idx) {
+function removeGalleryItem(idx){
   galleryItems.splice(idx, 1);
   renderGallery();
 }
 
-// Drop zone
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleGalleryFiles(e.dataTransfer.files); });
 fileInput.addEventListener('change', e => handleGalleryFiles(e.target.files));
 
-function handleGalleryFiles(files) {
+function handleGalleryFiles(files){
   Array.from(files).forEach(file => {
     galleryItems.push({
       url: URL.createObjectURL(file),
-      caption: '', tipo: 'galeria',
-      posicion: null,
-      orden: galleryItems.length,
-      file, isNew: true
+      caption: '', tipo: 'galeria', posicion: null,
+      orden: galleryItems.length, file, isNew: true
     });
   });
   renderGallery();
 }
 
-async function saveGallery(slug) {
-  // Subir archivos nuevos
-  for (let item of galleryItems) {
-    if (item.isNew && item.file) {
+async function saveGallery(slug){
+  for(let item of galleryItems){
+    if(item.isNew && item.file){
       item.url = await uploadImage(item.file, slug + '-gallery');
       delete item.file;
       item.isNew = false;
     }
   }
-  // Borrar las existentes y reinsertar con orden actualizado
   const { error: delErr } = await supabaseClient
     .from('proyecto_imagenes').delete().eq('proyecto_slug', slug);
-  if (delErr) throw new Error('Error al actualizar galería: ' + delErr.message);
-  if (galleryItems.length === 0) return;
+  if(delErr) throw new Error('Error al actualizar galería: ' + delErr.message);
+  if(galleryItems.length === 0) return;
 
   const rows = galleryItems.map((item, i) => ({
     proyecto_slug: slug,
@@ -280,7 +305,7 @@ async function saveGallery(slug) {
     posicion: item.tipo === 'contenido' ? (item.posicion || 1) : null,
   }));
   const { error: insErr } = await supabaseClient.from('proyecto_imagenes').insert(rows);
-  if (insErr) throw new Error('Error al guardar galería: ' + insErr.message);
+  if(insErr) throw new Error('Error al guardar galería: ' + insErr.message);
 }
 
 // ============================================================
@@ -294,22 +319,18 @@ form.addEventListener('submit', async e => {
 
   try {
     const slug = document.getElementById('f-slug').value.trim().toLowerCase();
-    if (!/^[a-z0-9\-]+$/.test(slug)) throw new Error('El slug solo puede tener letras minúsculas, números y guiones.');
-
-    let imgUrl = document.getElementById('img-preview').src;
-    if (selectedFile) imgUrl = await uploadImage(selectedFile, slug);
-    if (!editingId && !selectedFile) throw new Error('Sube una imagen principal para el proyecto.');
-
-    const tags = document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    if(!/^[a-z0-9\-]+$/.test(slug)) throw new Error('El slug solo puede tener letras minúsculas, números y guiones.');
 
     const num = parseInt(document.getElementById('f-num').value, 10);
-    const publicado = document.getElementById('f-publicado').checked;
-
-    // Validar número de lámina duplicado
-    const numDuplicado = currentProyectos.find(p =>
-      p.num === num && p.id !== editingId
-    );
+    const numDuplicado = currentProyectos.find(p => p.num === num && p.id !== editingId);
     if(numDuplicado) throw new Error(`El número de lámina ${num} ya lo usa "${numDuplicado.title}". Elige otro.`);
+
+    let imgUrl = document.getElementById('img-preview').src;
+    if(selectedFile) imgUrl = await uploadImage(selectedFile, slug);
+    if(!editingId && !selectedFile) throw new Error('Sube una imagen principal para el proyecto.');
+
+    const tags = document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    const publicado = document.getElementById('f-publicado').checked;
 
     const payload = {
       title:       document.getElementById('f-title').value.trim(),
@@ -331,25 +352,28 @@ form.addEventListener('submit', async e => {
     };
 
     let error;
-    if (editingId) {
+    if(editingId){
       ({ error } = await supabaseClient.from('proyectos').update(payload).eq('id', editingId));
     } else {
       ({ error } = await supabaseClient.from('proyectos').insert(payload));
     }
-    if (error) {
-      if (error.code === '23505') throw new Error('Ya existe un proyecto con ese slug.');
+    if(error){
+      if(error.code === '23505') throw new Error('Ya existe un proyecto con ese slug.');
       throw new Error(error.message);
     }
 
     await saveGallery(editingSlug || slug);
 
     formMsg.className = 'ok';
-    formMsg.textContent = editingId ? 'Proyecto actualizado.' : 'Proyecto creado.';
+    formMsg.textContent = editingId ? 'Proyecto actualizado correctamente.' : 'Proyecto creado correctamente.';
     formMsg.style.display = 'block';
-    resetForm();
+
     await loadProyectos();
 
-  } catch (err) {
+    // Volver al listado tras 1.5s
+    setTimeout(() => { resetForm(); showList(); }, 1500);
+
+  } catch(err){
     formMsg.className = 'err';
     formMsg.textContent = err.message;
     formMsg.style.display = 'block';
@@ -360,8 +384,9 @@ form.addEventListener('submit', async e => {
 });
 
 // ---------- Arranque ----------
-(async function init() {
+(async function init(){
   const ok = await requireAuth();
-  if (!ok) return;
+  if(!ok) return;
   await loadProyectos();
+  showList();
 })();

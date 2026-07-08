@@ -178,11 +178,20 @@ function buildBody(descripcion, contenidoImgs){
   });
 }
 
-function makeFig(img){
+function makeFig(img, allContentImgs, selfIdx){
   const fig = document.createElement('figure');
   fig.className = 'content-img';
-  fig.innerHTML = `<img src="${img.url}" alt="${img.caption||''}" loading="lazy">`
-    + (img.caption ? `<figcaption>${img.caption}</figcaption>` : '');
+  const imgEl = document.createElement('img');
+  imgEl.src     = img.url;
+  imgEl.alt     = img.caption || '';
+  imgEl.loading = 'lazy';
+  imgEl.addEventListener('click', () => openLightbox(allContentImgs, selfIdx));
+  fig.appendChild(imgEl);
+  if(img.caption){
+    const cap = document.createElement('figcaption');
+    cap.textContent = img.caption;
+    fig.appendChild(cap);
+  }
   return fig;
 }
 

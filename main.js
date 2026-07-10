@@ -124,3 +124,57 @@ function renderGridView(proyectos){
     }
   }
 })();
+
+
+// ---------- Animaciones de entrada ----------
+(function(){
+  // Fade-in escalonado para tarjetas del grid
+  function animateGrid(){
+    var cards = document.querySelectorAll('.grid-card');
+    cards.forEach(function(card, i){
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(16px)';
+      card.style.transition = 'opacity .4s ease, transform .4s ease';
+      card.style.transitionDelay = (i * 60) + 'ms';
+      // Forzar reflow para que la transición arranque
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        });
+      });
+    });
+  }
+
+  // Fade-in escalonado para filas de la lista
+  function animateList(){
+    var rows = document.querySelectorAll('.project-row');
+    rows.forEach(function(row, i){
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-8px)';
+      row.style.transition = 'opacity .35s ease, transform .35s ease';
+      row.style.transitionDelay = (i * 40) + 'ms';
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          row.style.opacity = '1';
+          row.style.transform = 'translateX(0)';
+        });
+      });
+    });
+  }
+
+  // Exponer para que se llamen tras renderizar
+  window._animateGrid = animateGrid;
+  window._animateList = animateList;
+})();
+
+// ---------- Scroll suave al navegar entre fichas ----------
+(function(){
+  document.addEventListener('click', function(e){
+    var link = e.target.closest('#d-prev, #d-next');
+    if(link){
+      // Scroll al inicio antes de navegar
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+})();

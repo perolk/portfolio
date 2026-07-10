@@ -240,7 +240,66 @@
   text-shadow:0 1px 3px rgba(0,0,0,0.5);
 }
 
-/* Badge tipo sobre la miniatura (siempre visible) */
+/* ===== MODAL VISTA PREVIA ===== */
+.preview-modal{
+  position:fixed;inset:0;background:rgba(15,14,10,0.92);
+  z-index:300;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transition:opacity .25s ease;
+}
+.preview-modal.open{opacity:1;pointer-events:auto;}
+.preview-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;background:rgba(23,22,15,0.95);
+  border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0;
+}
+.preview-topbar span{
+  font-family:var(--mono);font-size:0.72rem;text-transform:uppercase;
+  letter-spacing:0.08em;color:rgba(255,255,255,0.5);
+}
+.preview-topbar .btn-close-preview{
+  font-family:var(--mono);font-size:0.72rem;text-transform:uppercase;
+  letter-spacing:0.06em;background:none;border:1px solid rgba(255,255,255,0.3);
+  color:#fff;padding:7px 14px;cursor:pointer;
+}
+.preview-topbar .btn-close-preview:hover{border-color:#fff;}
+.preview-frame-wrap{
+  flex:1;overflow:hidden;position:relative;
+}
+.preview-frame-wrap iframe{
+  width:100%;height:100%;border:none;
+  background:var(--paper);
+}
+/* Selector de dispositivo */
+.preview-devices{display:flex;gap:8px;}
+.preview-devices button{
+  font-family:var(--mono);font-size:0.65rem;text-transform:uppercase;
+  letter-spacing:0.05em;background:none;border:1px solid rgba(255,255,255,0.2);
+  color:rgba(255,255,255,0.5);padding:5px 10px;cursor:pointer;
+}
+.preview-devices button.active,
+.preview-devices button:hover{border-color:#fff;color:#fff;}
+
+/* Botón previsualizar en el panel */
+.btn-preview{
+  padding:13px 18px;background:none;
+  border:1px solid var(--line);color:var(--stone);
+  font-family:var(--mono);font-size:0.75rem;
+  text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;
+  white-space:nowrap;
+}
+.btn-preview:hover{border-color:var(--clay);color:var(--clay);}
+
+/* ===== DRAG TO REORDER en listado ===== */
+.admin-row{cursor:default;transition:opacity .2s,background .15s;}
+.admin-row.dragging-row{opacity:0.4;}
+.admin-row.drag-over-row{background:var(--clay-soft);}
+.drag-handle{
+  cursor:grab;color:var(--stone);font-size:18px;
+  padding:0 4px;user-select:none;flex-shrink:0;
+}
+.drag-handle:active{cursor:grabbing;}
+
+/* Badge tipo sobre la miniatura (siempre visible) *//* Badge tipo sobre la miniatura (siempre visible) */
 .gi-badge{
   position:absolute;bottom:0;left:0;right:0;
   background:rgba(23,22,15,0.7);
@@ -359,6 +418,7 @@
 
           <div class="save-row">
             <button type="submit" class="btn-primary" id="save-btn">Guardar proyecto</button>
+            <button type="button" class="btn-preview" id="btn-preview">Previsualizar →</button>
             <button type="button" class="btn-secondary" id="btn-back2">Cancelar</button>
           </div>
           <p id="form-msg"></p>
@@ -385,6 +445,22 @@
     </form>
   </div>
 </main>
+
+<!-- Modal vista previa -->
+<div class="preview-modal" id="preview-modal">
+  <div class="preview-topbar">
+    <span>Vista previa — <span id="preview-title">Proyecto</span></span>
+    <div class="preview-devices">
+      <button class="active" data-width="100%" title="Escritorio">⬜ Escritorio</button>
+      <button data-width="768px" title="Tablet">▭ Tablet</button>
+      <button data-width="390px" title="Móvil">▯ Móvil</button>
+    </div>
+    <button class="btn-close-preview" id="close-preview">✕ Cerrar</button>
+  </div>
+  <div class="preview-frame-wrap" id="preview-frame-wrap">
+    <iframe id="preview-iframe" src="" title="Vista previa del proyecto"></iframe>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase-config.js"></script>

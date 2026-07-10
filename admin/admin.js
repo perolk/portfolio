@@ -67,20 +67,7 @@ async function loadProyectos(){
   renderList();
 }
 
-function renderList(){
-  listEl.innerHTML = currentProyectos.map(p => `
-    <div class="admin-row">
-      <img src="${p.img_url || ''}" alt="">
-      <div>
-        <div class="anum">Pl. ${String(p.num).padStart(2,'0')}
-          ${p.publicado === false ? '<span class="abadge">BORRADOR</span>' : ''}
-        </div>
-        <div class="atitle">${p.title}</div>
-      </div>
-      <button class="abtn" data-edit="${p.id}">Editar</button>
-      <button class="abtn danger" data-delete="${p.id}">Borrar</button>
-    </div>`).join('');
-}
+// renderList con drag-to-reorder definida al final
 
 listEl.addEventListener('click', e => {
   const editId   = e.target.dataset.edit;
@@ -390,3 +377,131 @@ form.addEventListener('submit', async e => {
   await loadProyectos();
   showList();
 })();
+
+
+// ============================================================
+// VISTA PREVIA (modal con iframe)
+// ============================================================
+(function(){
+  const modal      = document.getElementById('preview-modal');
+  const iframe     = document.getElementById('preview-iframe');
+  const titleEl    = document.getElementById('preview-title');
+  const frameWrap  = document.getElementById('preview-frame-wrap');
+  const btnPreview = document.getElementById('btn-preview');
+  const btnClose   = document.getElementById('close-preview');
+  if(!modal || !iframe || !btnPreview) return;
+
+  // Abrir preview con el slug actual
+  btnPreview.addEventListener('click', () => {
+    const slug = document.getElementById('f-slug').value.trim();
+    if(!slug){ alert('Introduce primero el slug del proyecto.'); return; }
+    const title = document.getElementById('f-title').value.trim() || slug;
+    titleEl.textContent = title;
+    // Apunta a la ficha pública (un nivel arriba)
+    iframe.src = `../proyectos/detalle.html?p=${slug}`;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+
+  // Cerrar
+  btnClose.addEventListener('click', closePreview);
+  modal.addEventListener('click', e => { if(e.target === modal) closePreview(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && modal.classList.contains('open')) closePreview(); });
+
+  function closePreview(){
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    iframe.src = '';
+  }
+
+  // Selector de ancho (escritorio / tablet / móvil)
+  document.querySelectorAll('.preview-devices button').forEach(btn => {
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.preview-devices button').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const w = this.dataset.width;
+      if(w === '100%'){
+        iframe.style.width  = '100%';
+        iframe.style.margin = '0';
+      } else {
+        iframe.style.width  = w;
+        iframe.style.margin = '0 auto';
+        iframe.style.display = 'block';
+      }
+    });
+  });
+})();
+
+// ============================================================
+// DRAG & DROP PARA REORDENAR PROYECTOS EN EL LISTADO
+// ============================================================
+let dragRowSrc = null;
+
+function renderList(){
+  listEl.innerHTML = currentProyectos.map((p, idx) => `
+    <div class="admin-row" draggable="true" data-idx="${idx}" data-id="${p.id}">
+      <span class="drag-handle" title="Arrastrar para reordenar">⠿</span>
+      <img src="${p.img_url || ''}" alt="">
+      <div>
+        <div class="anum">Pl. ${String(p.num).padStart(2,'0')}
+          ${p.publicado === false ? '<span class="abadge">BORRADOR</span>' : ''}
+        </div>
+        <div class="atitle">${p.title}</div>
+      </div>
+      <button class="abtn" data-edit="${p.id}">Editar</button>
+      <button class="abtn danger" data-delete="${p.id}">Borrar</button>
+    </div>`).join('');
+
+  // Eventos drag de cada fila
+  listEl.querySelectorAll('.admin-row').forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragRowSrc = parseInt(row.dataset.idx);
+      setTimeout(() => row.classList.add('dragging-row'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging-row');
+      listEl.querySelectorAll('.admin-row').forEach(r => r.classList.remove('drag-over-row'));
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      listEl.querySelectorAll('.admin-row').forEach(r => r.classList.remove('drag-over-row'));
+      row.classList.add('drag-over-row');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over-row'));
+    row.addEventListener('drop', async e => {
+      e.preventDefault();
+      row.classList.remove('drag-over-row');
+      const destIdx = parseInt(row.dataset.idx);
+      if(dragRowSrc === null || dragRowSrc === destIdx) return;
+
+      // Reordenar array local
+      const moved = currentProyectos.splice(dragRowSrc, 1)[0];
+      currentProyectos.splice(destIdx, 0, moved);
+      dragRowSrc = null;
+
+      // Reasignar números de lámina y guardar en Supabase
+      await reorderProyectos();
+    });
+  });
+}
+
+async function reorderProyectos(){
+  // Actualizar num de cada proyecto según su posición en el array
+  const updates = currentProyectos.map((p, i) => ({
+    id:  p.id,
+    num: i + 1,
+  }));
+
+  // Actualizar uno a uno (Supabase no soporta batch update con valores distintos por fila)
+  for(const u of updates){
+    const { error } = await supabaseClient
+      .from('proyectos').update({ num: u.num }).eq('id', u.id);
+    if(error){ alert('Error al reordenar: ' + error.message); await loadProyectos(); return; }
+  }
+
+  // Actualizar los nums en el array local sin volver a cargar
+  currentProyectos.forEach((p, i) => { p.num = i + 1; });
+  countLabel.textContent = `${currentProyectos.length} proyecto${currentProyectos.length === 1 ? '' : 's'}`;
+  renderList();
+}

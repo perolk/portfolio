@@ -133,14 +133,13 @@ function renderGridView(proyectos){
     var cards = document.querySelectorAll('.grid-card');
     cards.forEach(function(card, i){
       card.style.opacity = '0';
-      card.style.transform = 'translateY(16px)';
-      card.style.transition = 'opacity .4s ease, transform .4s ease';
-      card.style.transitionDelay = (i * 60) + 'ms';
-      // Forzar reflow para que la transición arranque
+      card.style.transform = 'translateY(40px) scale(0.95)';
+      card.style.transition = 'opacity .6s cubic-bezier(.22,.61,.36,1), transform .6s cubic-bezier(.22,.61,.36,1)';
+      card.style.transitionDelay = (i * 80) + 'ms';
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
           card.style.opacity = '1';
-          card.style.transform = 'translateY(0)';
+          card.style.transform = 'translateY(0) scale(1)';
         });
       });
     });
@@ -151,9 +150,9 @@ function renderGridView(proyectos){
     var rows = document.querySelectorAll('.project-row');
     rows.forEach(function(row, i){
       row.style.opacity = '0';
-      row.style.transform = 'translateX(-8px)';
-      row.style.transition = 'opacity .35s ease, transform .35s ease';
-      row.style.transitionDelay = (i * 40) + 'ms';
+      row.style.transform = 'translateX(-24px)';
+      row.style.transition = 'opacity .5s cubic-bezier(.22,.61,.36,1), transform .5s cubic-bezier(.22,.61,.36,1)';
+      row.style.transitionDelay = (i * 60) + 'ms';
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
           row.style.opacity = '1';

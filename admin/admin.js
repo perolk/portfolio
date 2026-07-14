@@ -92,6 +92,7 @@ async function startEdit(id){
   document.getElementById('f-tags').value = (p.tags || []).join(', ');
   document.getElementById('f-desc').value = p.descripcion || '';
   document.getElementById('f-publicado').checked = p.publicado !== false;
+  document.getElementById('f-destacado').checked = p.destacado === true;
 
   const preview = document.getElementById('img-preview');
   const noImg   = document.getElementById('img-no-img');
@@ -112,6 +113,7 @@ function resetForm(){
   editingId = editingSlug = selectedFile = null;
   form.reset();
   document.getElementById('f-publicado').checked = true;
+  document.getElementById('f-destacado').checked = false;
   document.getElementById('img-preview').style.display = 'none';
   document.getElementById('img-no-img').style.display = 'flex';
   if(formMsg){ formMsg.className = ''; formMsg.style.display = 'none'; }
@@ -335,8 +337,20 @@ form.addEventListener('submit', async e => {
       tags,
       img_url:     imgUrl,
       publicado,
+      destacado:   document.getElementById('f-destacado').checked,
       updated_at:  new Date().toISOString(),
     };
+
+    // Si se marca como destacado, quitar el destacado de cualquier otro proyecto
+    if(document.getElementById('f-destacado').checked && editingId){
+      await supabaseClient.from('proyectos')
+        .update({ destacado: false })
+        .neq('id', editingId);
+    } else if(document.getElementById('f-destacado').checked && !editingId){
+      await supabaseClient.from('proyectos')
+        .update({ destacado: false })
+        .gt('num', 0); // todos
+    }
 
     let error;
     if(editingId){

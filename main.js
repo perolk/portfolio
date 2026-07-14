@@ -62,6 +62,7 @@ function renderListView(proyectos){
         '</span>' +
         '<span class="row-year">'+p.year+'</span>' +
         '<span class="row-preview"><img src="'+p.img+'" alt="" loading="lazy"></span>' +
+        '<span class="row-thumb"><img src="'+p.img+'" alt="" loading="lazy"></span>' +
       '</a>'
     );
   }).join('');
@@ -177,3 +178,38 @@ function renderGridView(proyectos){
     }
   });
 })();
+
+// ---------- Hero visual: imagen del primer proyecto ----------
+function renderHeroVisual(proyectos){
+  var heroVisual = document.getElementById('hero-visual');
+  var heroImg    = document.getElementById('hero-img');
+  var heroLink   = document.getElementById('hero-link');
+  var heroCount  = document.getElementById('hero-count');
+  if(!heroVisual) return;
+
+  // Actualizar contador
+  if(heroCount) heroCount.textContent = proyectos.length + ' seleccionados';
+
+  // Usar el primer proyecto (más reciente por número de lámina)
+  var p = proyectos[0];
+  if(!p || !p.img) return;
+
+  heroImg.src = p.img;
+  heroImg.alt = p.title;
+  heroLink.href = 'proyectos/detalle.html?p=' + p.id;
+  heroLink.textContent = 'Ver ficha →';
+  heroVisual.href = 'proyectos/detalle.html?p=' + p.id;
+
+  // Mostrar con animación
+  heroVisual.style.display = 'block';
+  heroVisual.style.opacity = '0';
+  heroVisual.style.transform = 'translateX(20px)';
+  heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
+  heroVisual.style.transitionDelay = '200ms';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      heroVisual.style.opacity = '1';
+      heroVisual.style.transform = 'translateX(0)';
+    });
+  });
+}

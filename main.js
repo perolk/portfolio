@@ -183,7 +183,7 @@ function renderGridView(proyectos){
 function renderHeroVisual(proyectos){
   var heroVisual = document.getElementById('hero-visual');
   var heroImg    = document.getElementById('hero-img');
-  var heroLink   = document.getElementById('hero-link');
+  var heroLabel  = document.getElementById('hero-label');
   var heroCount  = document.getElementById('hero-count');
   if(!heroVisual) return;
 
@@ -196,16 +196,15 @@ function renderHeroVisual(proyectos){
 
   heroImg.src = p.img;
   heroImg.alt = p.title;
-  heroLink.href = 'proyectos/detalle.html?p=' + p.id;
-  heroLink.textContent = 'Ver ficha →';
   heroVisual.href = 'proyectos/detalle.html?p=' + p.id;
+  if(heroLabel) heroLabel.textContent = p.title;
 
   // Mostrar con animación
-  heroVisual.style.display = 'block';
   heroVisual.style.opacity = '0';
   heroVisual.style.transform = 'translateX(20px)';
   heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
   heroVisual.style.transitionDelay = '200ms';
+  heroVisual.style.display = 'block';
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
       heroVisual.style.opacity = '1';

@@ -179,7 +179,7 @@ function renderGridView(proyectos){
   });
 })();
 
-// ---------- Hero visual: imagen del primer proyecto ----------
+// ---------- Hero visual: proyecto marcado como destacado ----------
 function renderHeroVisual(proyectos){
   var heroVisual = document.getElementById('hero-visual');
   var heroImg    = document.getElementById('hero-img');
@@ -190,8 +190,8 @@ function renderHeroVisual(proyectos){
   // Actualizar contador
   if(heroCount) heroCount.textContent = proyectos.length + ' seleccionados';
 
-  // Usar el primer proyecto (más reciente por número de lámina)
-  var p = proyectos[0];
+  // Buscar el proyecto marcado como destacado; si no hay, usar el primero
+  var p = proyectos.find(function(x){ return x.destacado; }) || proyectos[0];
   if(!p || !p.img) return;
 
   heroImg.src = p.img;

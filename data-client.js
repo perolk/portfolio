@@ -31,6 +31,7 @@ async function fetchProyectos() {
     tags:        p.tags || [],
     img:         p.img_url || '',
     publicado:   p.publicado,
+    destacado:   p.destacado || false,
   }));
 }
 

@@ -199,16 +199,14 @@ function renderHeroVisual(proyectos){
   var labelTitle = document.getElementById('hero-label-title');
   if(labelTitle) labelTitle.textContent = p.title;
 
-  // Mostrar con animación
+  // Quitar display:none y mostrar con animación
+  heroVisual.removeAttribute('style');
+  heroVisual.style.display = 'block';
   heroVisual.style.opacity = '0';
   heroVisual.style.transform = 'translateX(20px)';
-  heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
-  heroVisual.style.transitionDelay = '200ms';
-  heroVisual.style.display = 'block';
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      heroVisual.style.opacity = '1';
-      heroVisual.style.transform = 'translateX(0)';
-    });
-  });
+  setTimeout(function(){
+    heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
+    heroVisual.style.opacity = '1';
+    heroVisual.style.transform = 'translateX(0)';
+  }, 50);
 }

@@ -102,31 +102,41 @@ img{display:block;max-width:100%;}
 .hero-text{min-width:0;}
 .hero-visual{
   position:relative;
-  display:block;
+  aspect-ratio:4/3;
   overflow:hidden;
   background:var(--paper-dim);
-  min-height:300px;
   text-decoration:none;
+  display:block;
 }
 .hero-visual img{
-  position:absolute;
-  inset:0;
   width:100%;height:100%;
   object-fit:cover;
   transition:transform .6s ease;
+  display:block;
 }
 .hero-visual:hover img{transform:scale(1.03);}
 .hero-visual-label{
   position:absolute;
-  bottom:16px;left:16px;
-  font-family:var(--mono);font-size:0.68rem;
-  text-transform:uppercase;letter-spacing:0.08em;
-  color:#fff;
-  background:rgba(23,22,15,0.65);
-  padding:6px 12px;
-  backdrop-filter:blur(4px);
-  pointer-events:none;
+  bottom:0;left:0;right:0;
+  padding:16px 20px;
+  background:linear-gradient(to top, rgba(23,22,15,0.8) 0%, rgba(23,22,15,0.2) 60%, transparent 100%);
+  display:flex;flex-direction:column;gap:4px;
 }
+.hero-visual-label .label-tag{
+  font-family:var(--mono);font-size:0.62rem;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--clay);
+}
+.hero-visual-label .label-title{
+  font-family:var(--serif);font-weight:400;font-size:1.1rem;
+  color:#fff;letter-spacing:-0.01em;line-height:1.2;
+}
+.hero-visual-label .label-arrow{
+  font-family:var(--mono);font-size:0.68rem;
+  text-transform:uppercase;letter-spacing:0.06em;
+  color:rgba(255,255,255,0.6);margin-top:4px;
+  transition:color .2s,transform .2s;display:inline-block;
+}
+.hero-visual:hover .label-arrow{color:#fff;transform:translateX(4px);}
 @media(max-width:900px){
   .hero .wrap{grid-template-columns:1fr;}
   .hero-visual{display:none;}

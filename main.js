@@ -183,7 +183,6 @@ function renderGridView(proyectos){
 function renderHeroVisual(proyectos){
   var heroVisual = document.getElementById('hero-visual');
   var heroImg    = document.getElementById('hero-img');
-  var heroLabel  = document.getElementById('hero-label');
   var heroCount  = document.getElementById('hero-count');
   if(!heroVisual) return;
 
@@ -197,7 +196,8 @@ function renderHeroVisual(proyectos){
   heroImg.src = p.img;
   heroImg.alt = p.title;
   heroVisual.href = 'proyectos/detalle.html?p=' + p.id;
-  if(heroLabel) heroLabel.textContent = p.title;
+  var labelTitle = document.getElementById('hero-label-title');
+  if(labelTitle) labelTitle.textContent = p.title;
 
   // Mostrar con animación
   heroVisual.style.opacity = '0';

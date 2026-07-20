@@ -100,14 +100,14 @@ img{display:block;max-width:100%;}
   align-items:center;
 }
 .hero-text{min-width:0;}
+.hero-visual--hidden{visibility:hidden;pointer-events:none;}
 .hero-visual{
   position:relative;
   overflow:hidden;
   background:var(--paper-dim);
   text-decoration:none;
   display:block;
-  /* Altura fija relativa al ancho del grid, más robusta que aspect-ratio solo */
-  padding-top:75%; /* 4:3 */
+  padding-top:75%; /* aspect-ratio 4:3 compatible con todos los navegadores */
 }
 .hero-visual img{
   position:absolute;
@@ -144,7 +144,7 @@ img{display:block;max-width:100%;}
 .hero-visual:hover .label-arrow{color:#fff;transform:translateX(4px);}
 @media(max-width:900px){
   .hero .wrap{grid-template-columns:1fr;}
-  .hero-visual{display:none;}
+  .hero-visual{display:none !important;}
 }
 .hero .eyebrow{
   font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;

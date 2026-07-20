@@ -199,13 +199,12 @@ function renderHeroVisual(proyectos){
   var labelTitle = document.getElementById('hero-label-title');
   if(labelTitle) labelTitle.textContent = p.title;
 
-  // Quitar display:none y mostrar con animación
-  heroVisual.removeAttribute('style');
-  heroVisual.style.display = 'block';
+  // Mostrar con animación quitando la clase hidden
   heroVisual.style.opacity = '0';
   heroVisual.style.transform = 'translateX(20px)';
+  heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
+  heroVisual.classList.remove('hero-visual--hidden');
   setTimeout(function(){
-    heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
     heroVisual.style.opacity = '1';
     heroVisual.style.transform = 'translateX(0)';
   }, 50);

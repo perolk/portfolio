@@ -184,28 +184,37 @@ function renderHeroVisual(proyectos){
   var heroVisual = document.getElementById('hero-visual');
   var heroImg    = document.getElementById('hero-img');
   var heroCount  = document.getElementById('hero-count');
-  if(!heroVisual) return;
 
   // Actualizar contador
   if(heroCount) heroCount.textContent = proyectos.length + ' seleccionados';
 
+  if(!heroVisual){ console.warn('[hero] No se encontró #hero-visual en el DOM'); return; }
+
   // Buscar el proyecto marcado como destacado; si no hay, usar el primero
   var p = proyectos.find(function(x){ return x.destacado; }) || proyectos[0];
-  if(!p || !p.img) return;
+  console.log('[hero] Proyecto seleccionado:', p ? p.title : 'ninguno', '| destacado:', p ? p.destacado : '-', '| img:', p ? p.img : '-');
 
-  heroImg.src = p.img;
-  heroImg.alt = p.title;
+  if(!p){ console.warn('[hero] No hay proyectos'); return; }
+
+  // Si no hay imagen, mostrar el contenedor de color con solo el título
+  if(p.img){
+    heroImg.src = p.img;
+    heroImg.alt = p.title;
+  } else {
+    console.warn('[hero] El proyecto no tiene imagen (p.img vacío)');
+  }
+
   heroVisual.href = 'proyectos/detalle.html?p=' + p.id;
   var labelTitle = document.getElementById('hero-label-title');
   if(labelTitle) labelTitle.textContent = p.title;
 
-  // Mostrar con animación quitando la clase hidden
+  // Mostrar el contenedor siempre, con o sin imagen
+  heroVisual.classList.remove('hero-visual--hidden');
   heroVisual.style.opacity = '0';
   heroVisual.style.transform = 'translateX(20px)';
-  heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
-  heroVisual.classList.remove('hero-visual--hidden');
   setTimeout(function(){
+    heroVisual.style.transition = 'opacity .7s ease, transform .7s ease';
     heroVisual.style.opacity = '1';
     heroVisual.style.transform = 'translateX(0)';
-  }, 50);
+  }, 100);
 }

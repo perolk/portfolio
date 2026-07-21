@@ -93,7 +93,8 @@ img{display:block;max-width:100%;}
   padding:clamp(40px,10vw,140px) 0 clamp(32px,6vw,90px);
   border-bottom:1px solid var(--line);
 }
-.hero .wrap{
+/* Grid del hero solo en la portada, no en CV ni otras páginas */
+.hero-index .wrap{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:clamp(32px,5vw,80px);
@@ -143,7 +144,7 @@ img{display:block;max-width:100%;}
 }
 .hero-visual:hover .label-arrow{color:#fff;transform:translateX(4px);}
 @media(max-width:900px){
-  .hero .wrap{grid-template-columns:1fr;}
+  .hero-index .wrap{grid-template-columns:1fr;}
   .hero-visual{display:none !important;}
 }
 .hero .eyebrow{

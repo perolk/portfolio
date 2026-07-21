@@ -103,6 +103,7 @@ function renderGridView(proyectos){
   fetchProyectos().then(function(proyectos){
     renderGridView(proyectos);
     renderListView(proyectos);
+    renderHeroVisual(proyectos);
     initViewToggle();
   }).catch(function(err){
     showLoadError(gridEl, err);
